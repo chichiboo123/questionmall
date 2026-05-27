@@ -70,10 +70,10 @@ function initSheet() {
 
 function seedSamples() {
   const samples = [
-    ['mind','마음','empathy','공감질문','오늘 가장 행복했던 순간은?','#FFD6E0',''],
+    ['mind','마음','empathy','선택질문','오늘 가장 행복했던 순간은?','#FFD6E0',''],
     ['thought','생각','imagine','상상질문','내가 투명인간이 된다면 무엇을 할까?','#D6E5FF',''],
     ['body','몸','exp','경험질문','가장 좋아하는 운동은?','#D6F5D6',''],
-    ['relation','관계','empathy','공감질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2',''],
+    ['relation','관계','empathy','선택질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2',''],
   ];
   const sh = ensureSheet();
   samples.forEach(s => {
