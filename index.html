@@ -180,17 +180,23 @@
         <div class="emoji-picker">
           <p class="emoji-hint muted small" data-i18n="emojiHint">앞면 좌측 하단에 들어갈 이모지를 골라보세요.</p>
           <div class="emoji-tabs" id="emojiTabs">
-            <button class="emoji-tab active" data-pack="face"   data-i18n="emojiFace">표정</button>
-            <button class="emoji-tab" data-pack="hand"   data-i18n="emojiHand">손짓</button>
-            <button class="emoji-tab" data-pack="nature" data-i18n="emojiNature">자연</button>
-            <button class="emoji-tab" data-pack="food"   data-i18n="emojiFood">음식</button>
-            <button class="emoji-tab" data-pack="animal" data-i18n="emojiAnimal">동물</button>
-            <button class="emoji-tab" data-pack="symbol" data-i18n="emojiSymbol">기호</button>
+            <button class="emoji-tab active" data-pack="face"     data-i18n="emojiFace">표정</button>
+            <button class="emoji-tab" data-pack="hand"     data-i18n="emojiHand">손짓</button>
+            <button class="emoji-tab" data-pack="animal"   data-i18n="emojiAnimal">동물</button>
+            <button class="emoji-tab" data-pack="nature"   data-i18n="emojiNature">자연</button>
+            <button class="emoji-tab" data-pack="food"     data-i18n="emojiFood">음식</button>
+            <button class="emoji-tab" data-pack="activity" data-i18n="emojiActivity">활동</button>
+            <button class="emoji-tab" data-pack="object"   data-i18n="emojiObject">사물</button>
+            <button class="emoji-tab" data-pack="symbol"   data-i18n="emojiSymbol">기호</button>
+          </div>
+          <div class="emoji-recent-row" id="emojiRecentRow" hidden>
+            <span class="emoji-recent-label" data-i18n="emojiRecent">최근 사용</span>
+            <div class="emoji-recent-list" id="emojiRecentList"></div>
           </div>
           <div class="emoji-list" id="emojiList"></div>
           <div class="emoji-custom-row">
             <input type="text" id="customEmojiInput" class="custom-emoji-input" maxlength="8" autocomplete="off" placeholder="😀" aria-label="custom emoji" />
-            <button class="ghost-btn small-btn" id="applyCustomEmojiBtn">내 이모지 넣기</button>
+            <button class="ghost-btn small-btn" id="applyCustomEmojiBtn" data-i18n="applyCustomEmoji">내 이모지 넣기</button>
           </div>
 
           <button class="ghost-btn small-btn" id="clearEmojiBtn" data-i18n="clearEmoji">이모지 제거</button>

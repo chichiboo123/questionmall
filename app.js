@@ -33,14 +33,73 @@
     mind: '❤️', thought: '💭', body: '🏃', relation: '👥', etc: '⭐',
   };
 
+  // 각 팩은 약 70~80개로 확장 — 어린이가 다양한 이모지를 둘러보며 고를 수 있도록
   const EMOJI_PACKS = {
-    face:   ['😀','😁','😂','🥲','😊','😍','🥰','😎','🤔','🤩','😴','😭','😡','😱','😳','🤗','😏','🙄','😬','😇'],
-    hand:   ['👍','👎','👏','🙌','🙏','👋','🤝','✌️','🤞','🤟','🤘','👌','🫶','💪','🫰','👀'],
-    nature: ['🌟','✨','⭐','🌈','☀️','⛅','🌧️','❄️','⚡','🔥','🌸','🌼','🍀','🌳','🌊','🌙'],
-    food:   ['🍎','🍊','🍋','🍉','🍇','🍓','🍪','🍩','🍰','🍫','🍕','🍔','🍟','🍙','🍣','🍦','🍿','☕'],
-    animal: ['🐶','🐱','🦊','🦁','🐯','🐻','🐼','🐰','🐨','🐮','🐷','🐸','🐵','🐔','🐧','🐝','🐢','🦄'],
-    symbol: ['💖','❤️','💛','💚','💙','💜','🖤','❗','❓','💡','📚','🎵','🎉','🎈','🏆','⚽','🎨','✏️'],
+    face: [
+      '😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩',
+      '😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤗','🤭','🤫','🤔','🤐','🤨',
+      '😐','😑','😶','😏','😒','🙄','😬','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢',
+      '🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁',
+      '😮','😯','😲','😳','🥺','🥹','😦','😧','😨','😰','😢','😭','😱','😖','😞','😓',
+      '😩','😫','🥱','😤','😠','😡','🤬','😈','👿','💀','💩','🤡','👻','👽','👾','🤖',
+    ],
+    hand: [
+      '👍','👎','👏','🙌','🙏','👋','🤝','✌️','🤞','🤟','🤘','👌','🤌','🤏','🫶','💪',
+      '🫰','👀','🤚','🖐️','✋','🖖','🤛','🤜','✊','👊','👇','👆','👉','👈','☝️','🤙',
+      '🫵','✍️','💅','🦾','🦵','🦶','👂','🦻','👃','🧠','🦷','👁️','👅','👄','🫦','💋',
+      '🧑','👶','🧒','👦','👧','🧓','👴','👵','👨','👩','🧑‍🎓','🧑‍🏫','🧑‍🎨','🧑‍🚀','🧑‍🚒','🧑‍🍳',
+      '👮','🕵️','💂','👷','🤴','👸','👳','👲','🧕','🤰','🤱','👼','🎅','🤶','🦸','🦹',
+      '🧙','🧚','🧛','🧜','🧝','🧞','🧟','💆','💇','🚶','🏃','💃','🕺','👯','👫','👨‍👩‍👧',
+    ],
+    animal: [
+      '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐽','🐸',
+      '🐵','🙈','🙉','🙊','🐒','🦍','🦧','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦢','🦉',
+      '🦅','🦇','🐺','🐗','🐴','🦄','🦓','🦌','🦬','🐂','🐃','🐄','🐎','🐖','🐏','🐑',
+      '🦙','🐐','🦒','🐘','🦣','🦏','🦛','🐪','🐫','🦘','🐀','🐁','🐿️','🦔','🦫','🦦',
+      '🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪲','🕷️','🦂','🐢','🐍','🦎','🦖','🦕','🐙',
+      '🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🦭','🐅','🐆','🐾',
+    ],
+    nature: [
+      '🌟','✨','⭐','🌠','🌈','☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️',
+      '☃️','⛄','🌬️','💨','🌪️','🌫️','🌊','💧','💦','☔','⚡','🔥','💥','🌙','🌛','🌜',
+      '🌚','🌝','🌞','☄️','🪐','🌍','🌎','🌏','🗺️','🏔️','⛰️','🌋','🏕️','🏖️','🏜️','🏝️',
+      '🌅','🌄','🌇','🌆','🌃','🌉','🌸','💮','🏵️','🌹','🥀','🌺','🌻','🌼','🌷','💐',
+      '🌱','🌿','☘️','🍀','🍃','🍂','🍁','🌾','🌵','🌴','🌳','🌲','🪴','🌰','🥜','🪨',
+    ],
+    food: [
+      '🍎','🍏','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍒','🍑','🥭','🍍','🥥','🥝',
+      '🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐',
+      '🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔',
+      '🍟','🍕','🥪','🌮','🌯','🫔','🥗','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙',
+      '🍚','🍘','🍥','🥮','🍡','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🧁','🥧','🍫','🍬',
+      '🍭','🍮','🍯','☕','🍵','🥛','🧃','🥤','🧋','🍶','🍺','🥂','🍷','🥃','🍹','🧊',
+    ],
+    activity: [
+      '⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🥅','⛳','🪁',
+      '🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼',
+      '🤸','⛹️','🤺','🤾','🏌️','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵','🚴','🏆','🥇',
+      '🥈','🥉','🏅','🎖️','🎗️','🎫','🎟️','🎪','🤹','🎭','🩰','🎨','🎬','🎤','🎧','🎼',
+      '🎹','🥁','🪘','🎷','🎺','🪗','🎸','🪕','🎻','🎲','♟️','🎯','🎮','🕹️','🎰','🧩',
+    ],
+    object: [
+      '📱','💻','⌨️','🖥️','🖱️','💾','💿','📀','📷','📸','📹','🎥','📞','☎️','📺','📻',
+      '🎙️','⏰','⏱️','⏲️','⌛','⏳','🔋','🔌','💡','🔦','🕯️','🧯','💸','💵','💰','💳',
+      '💎','⚖️','🧰','🪛','🔧','🔨','⚒️','🛠️','⛏️','🪚','🔩','⚙️','🧱','🔗','⛓️','🧲',
+      '🧪','🧫','🧬','🔬','🔭','📡','💉','🩸','💊','🩹','🩺','🌡️','🛏️','🛋️','🚪','🪑',
+      '🚿','🛁','🪥','🧴','🧷','🧹','🧺','🧻','🪣','🧼','🪒','🧽','🛒','🛍️','📚','📖',
+      '📒','📓','📔','📕','📗','📘','📙','📰','✏️','✒️','🖊️','🖋️','🖌️','🖍️','📝','📌',
+    ],
+    symbol: [
+      '💖','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗',
+      '💘','💝','💟','💌','💢','💥','💫','💦','💨','🕳️','💬','🗨️','🗯️','💭','💤','♻️',
+      '✅','❌','⭕','🚫','⚠️','❗','❓','❕','❔','‼️','⁉️','💯','🔆','🔅','〽️','🔱',
+      '⚜️','🔰','♠️','♥️','♦️','♣️','🃏','🎴','🀄','☮️','✝️','☪️','🕉️','☸️','✡️','🔯',
+      '☯️','☦️','🛐','⚛️','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓',
+      '🆎','🅰️','🅱️','🆑','🆒','🆓','🆕','🆖','🆗','🆙','🆚','🈁','🈂️','🉐','🉑','㊙️',
+    ],
   };
+  const RECENT_EMOJI_KEY = 'questionmall.recentEmojis.v1';
+  const RECENT_EMOJI_MAX = 16;
 
   const $  = sel => document.querySelector(sel);
   const $$ = sel => document.querySelectorAll(sel);
@@ -298,17 +357,22 @@
     el.style.fontSize = size + 'px';
   }
 
-  // ============ Emoji picker (single-slot, fixed position) ============
+  // ============ Emoji picker ============
   const emojiList = $('#emojiList');
   function renderEmojiPack(pack) {
     emojiList.innerHTML = '';
-    EMOJI_PACKS[pack].forEach(em => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.textContent = em;
-      b.addEventListener('click', () => setCardEmoji(em));
-      emojiList.appendChild(b);
-    });
+    const frag = document.createDocumentFragment();
+    EMOJI_PACKS[pack].forEach(em => frag.appendChild(buildEmojiButton(em)));
+    emojiList.appendChild(frag);
+    // 새 팩으로 이동하면 스크롤 위치를 맨 위로
+    emojiList.scrollTop = 0;
     syncEmojiPickerSelection();
+  }
+  function buildEmojiButton(em) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = em;
+    b.addEventListener('click', () => setCardEmoji(em));
+    return b;
   }
   $('#emojiTabs').addEventListener('click', e => {
     const t = e.target.closest('.emoji-tab'); if (!t) return;
@@ -326,10 +390,7 @@
   $('#applyCustomEmojiBtn').addEventListener('click', () => {
     const input = $('#customEmojiInput');
     const em = normalizeEmojiInput(input.value);
-    if (!em) {
-      showToast('이모지를 입력해 주세요.');
-      return;
-    }
+    if (!em) { showToast(t('toastNeedEmoji')); return; }
     setCardEmoji(em);
     input.value = '';
   });
@@ -340,9 +401,42 @@
     }
   });
 
+  // ===== 최근 사용 이모지 =====
+  function loadRecentEmojis() {
+    try {
+      const raw = localStorage.getItem(RECENT_EMOJI_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr.filter(x => typeof x === 'string' && x) : [];
+    } catch { return []; }
+  }
+  function saveRecentEmojis(list) {
+    try { localStorage.setItem(RECENT_EMOJI_KEY, JSON.stringify(list.slice(0, RECENT_EMOJI_MAX))); } catch {}
+  }
+  function pushRecentEmoji(em) {
+    if (!em) return;
+    const list = loadRecentEmojis().filter(x => x !== em);
+    list.unshift(em);
+    saveRecentEmojis(list);
+    renderRecentEmojis();
+  }
+  function renderRecentEmojis() {
+    const row = $('#emojiRecentRow');
+    const listEl = $('#emojiRecentList');
+    if (!row || !listEl) return;
+    const list = loadRecentEmojis();
+    if (!list.length) { row.hidden = true; return; }
+    row.hidden = false;
+    listEl.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    list.forEach(em => frag.appendChild(buildEmojiButton(em)));
+    listEl.appendChild(frag);
+    syncEmojiPickerSelection();
+  }
+
   function setCardEmoji(em) {
     state.selectedEmoji = em;
     $('#cardCharacter').textContent = em;
+    pushRecentEmoji(em);
     syncEmojiPickerSelection();
     saveLocal();
   }
@@ -356,8 +450,9 @@
     return firstEmoji || '';
   }
   function syncEmojiPickerSelection() {
-    emojiList.querySelectorAll('button').forEach(b => {
-      b.classList.toggle('selected', !!state.selectedEmoji && b.textContent === state.selectedEmoji);
+    const sel = state.selectedEmoji;
+    document.querySelectorAll('#emojiList button, #emojiRecentList button').forEach(b => {
+      b.classList.toggle('selected', !!sel && b.textContent === sel);
     });
   }
 
@@ -1127,6 +1222,7 @@
   // ============ Init ============
   applyLang('ko');
   renderEmojiPack('face');
+  renderRecentEmojis();
   loadLocal();
   refreshCardCount();
 })();
