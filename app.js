@@ -423,15 +423,24 @@
 
   async function cardToCanvas(el) {
     const clone = el.cloneNode(true);
-    clone.style.borderRadius = '0';
-    clone.style.boxShadow = 'none';
-    clone.style.margin = '0';
+    clone.style.setProperty('border-radius', '0', 'important');
+    clone.style.setProperty('box-shadow', 'none', 'important');
+    clone.style.setProperty('margin', '0', 'important');
     clone.style.position = 'fixed';
     clone.style.left = '-99999px';
     clone.style.top = '0';
+    clone.style.overflow = 'hidden';
     document.body.appendChild(clone);
+    // Force any inner rounded card/face containers to also be square so the
+    // outer JPG bitmap is a clean rectangle (no transparent → black corners).
+    clone.querySelectorAll('.card, .face, .flipper, .lotto-card, .draw-card').forEach(node => {
+      node.style.setProperty('border-radius', '0', 'important');
+    });
     try {
-      return await html2canvas(clone, { backgroundColor: null, scale: 2, useCORS: true });
+      const cs = window.getComputedStyle(el);
+      let bg = cs.backgroundColor;
+      if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') bg = '#ffffff';
+      return await html2canvas(clone, { backgroundColor: bg, scale: 2, useCORS: true });
     } finally {
       clone.remove();
     }
@@ -535,7 +544,7 @@
 
   $('#drawBtn').addEventListener('click', async () => {
     const grid = $('#drawGrid');
-    grid.innerHTML = `<div class="empty-state">${t('loading')}</div>`;
+    grid.innerHTML = `<div class="loading-state">${t('loading')}</div>`;
     const deck = await fetchDeck();
     const cats  = selectedValues($('#expCategoryChips'));
     const types = selectedValues($('#expTypeChips'));
@@ -782,6 +791,38 @@
 
   $('#adminSearch').addEventListener('input', renderAdmin);
   $('#adminFilterCat').addEventListener('change', renderAdmin);
+  $('#adminFilterType').addEventListener('change', renderAdmin);
+  $('#adminSort').addEventListener('change', renderAdmin);
+
+  // Custom delete confirmation modal (replaces native confirm)
+  let _pendingDeleteId = null;
+  function openDeleteModal(item) {
+    _pendingDeleteId = item.id;
+    const preview = $('#adminDeletePreview');
+    const color = item.color || CATEGORY_COLOR[item.category] || '#FFD6E0';
+    preview.innerHTML = `
+      <div class="del-card" style="background:${escapeAttr(color)}">
+        <div class="del-meta">
+          <span class="del-badge">${escapeHtml(item.categoryLabel || item.category || '')}</span>
+          <span class="del-badge del-badge-type">${escapeHtml(item.typeLabel || item.type || '')}</span>
+        </div>
+        <div class="del-q">${escapeHtml(item.question || '')}</div>
+        ${item.author ? `<div class="del-author">— ${escapeHtml(item.author)}</div>` : ''}
+      </div>`;
+    $('#adminDeleteModal').hidden = false;
+  }
+  function closeDeleteModal() {
+    _pendingDeleteId = null;
+    $('#adminDeleteModal').hidden = true;
+  }
+  $('#adminDeleteClose').addEventListener('click', closeDeleteModal);
+  $('#adminDeleteCancel').addEventListener('click', closeDeleteModal);
+  $('#adminDeleteOk').addEventListener('click', async () => {
+    if (!_pendingDeleteId) return;
+    const id = _pendingDeleteId;
+    closeDeleteModal();
+    await deleteItem(id);
+  });
 
   $$('.view-toggle .vt').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -830,22 +871,43 @@
   function filteredAdminItems() {
     const q = $('#adminSearch').value.trim().toLowerCase();
     const cat = $('#adminFilterCat').value;
-    return adminItems.filter(it => {
+    const type = $('#adminFilterType') ? $('#adminFilterType').value : '';
+    const sort = $('#adminSort') ? $('#adminSort').value : 'newest';
+    let list = adminItems.filter(it => {
       if (cat && it.category !== cat) return false;
+      if (type && it.type !== type) return false;
       if (q) {
         const hay = [it.question, it.categoryLabel, it.typeLabel, it.author].join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
+    const ts = it => { const d = new Date(it.timestamp); return isNaN(d) ? 0 : d.getTime(); };
+    if (sort === 'newest')      list = list.slice().sort((a, b) => ts(b) - ts(a));
+    else if (sort === 'oldest') list = list.slice().sort((a, b) => ts(a) - ts(b));
+    else if (sort === 'category') {
+      const order = ['mind','thought','body','relation','etc'];
+      list = list.slice().sort((a, b) => {
+        const da = order.indexOf(a.category); const db = order.indexOf(b.category);
+        return (da === -1 ? 99 : da) - (db === -1 ? 99 : db);
+      });
+    }
+    return list;
   }
 
   function renderAdmin() {
     const items = filteredAdminItems();
-    $('#adminStats').textContent = t('totalCount').replace('{n}', items.length);
+    const total = adminItems.length;
+    const shown = items.length;
+    const statsEl = $('#adminStats');
+    if (total === shown) {
+      statsEl.textContent = t('totalCount').replace('{n}', total);
+    } else {
+      statsEl.textContent = `${shown} / ${total}`;
+    }
     const content = $('#adminContent');
     if (items.length === 0) {
-      content.innerHTML = `<p class="muted">${t('emptyAdmin')}</p>`;
+      content.innerHTML = `<div class="admin-empty"><div class="admin-empty-emoji">📭</div><p class="muted">${t('emptyAdmin')}</p></div>`;
       return;
     }
     if (adminView === 'list') renderAdminList(items, content);
@@ -903,7 +965,7 @@
       input.addEventListener('change', () => row.classList.add('dirty'));
     });
     row.querySelector('[data-act="save"]').addEventListener('click', () => saveRow(row, original));
-    row.querySelector('[data-act="del"]').addEventListener('click',  () => deleteItem(original.id));
+    row.querySelector('[data-act="del"]').addEventListener('click',  () => openDeleteModal(original));
   }
 
   function collectFields(scope) {
@@ -929,7 +991,6 @@
   }
 
   async function deleteItem(id) {
-    if (!confirm(t('confirmDelete'))) return;
     try {
       const r = await postToScript({ action: 'delete', password: adminPw, id });
       if (!r.ok) throw new Error(r.error || 'fail');
