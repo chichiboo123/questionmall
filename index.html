@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&display=swap"
     rel="stylesheet"
   />
 
@@ -21,8 +21,8 @@
 </head>
 <body>
   <header class="app-header">
+    <div class="header-left"></div>
     <h1 class="app-title" data-i18n="appTitle">질문 다있소</h1>
-
     <div class="header-right">
       <div class="lang-dropdown">
         <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
@@ -41,15 +41,26 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="maker" data-i18n="tabMaker">카드 제작소</button>
-    <button class="tab" data-tab="explorer" data-i18n="tabExplorer">카드 탐험대</button>
+    <button class="tab active" data-tab="maker"    data-i18n="tabMaker">질문 제작소</button>
+    <button class="tab"        data-tab="explorer" data-i18n="tabExplorer">질문 탐험대</button>
+    <button class="tab"        data-tab="lotto"    data-i18n="tabLotto">질문 로또</button>
   </nav>
 
   <main class="app-main">
-    <!-- ============ 카드 제작소 ============ -->
+    <!-- ============ 질문 제작소 ============ -->
     <section class="view" id="view-maker">
       <!-- STEP 1: 정보 입력 -->
       <div class="step" id="step-input">
+        <!-- 전체 질문카드 카운터 -->
+        <div class="count-banner" id="countBanner">
+          <span class="count-icon">📮</span>
+          <span class="count-text">
+            <span data-i18n="countPrefix">지금까지 모인 질문카드</span>
+            <strong class="count-num" id="cardCountNum">…</strong>
+            <span data-i18n="countSuffix">장</span>
+          </span>
+        </div>
+
         <h2 data-i18n="makerStep1Title">카드 정보 입력</h2>
 
         <div class="form-row">
@@ -62,6 +73,7 @@
             <button class="chip cat-etc"      data-value="etc"         data-i18n="catEtc">기타</button>
           </div>
           <input type="text" id="categoryEtcInput" class="etc-input" hidden
+                 autocomplete="off"
                  data-i18n-placeholder="categoryEtcPh" placeholder="카테고리 직접 입력" />
 
           <div class="palette" id="etcPalette" hidden>
@@ -86,23 +98,29 @@
             <button class="chip" data-value="etc"      data-i18n="typeEtc">기타</button>
           </div>
           <input type="text" id="typeEtcInput" class="etc-input" hidden
+                 autocomplete="off"
                  data-i18n-placeholder="typeEtcPh" placeholder="질문 유형 직접 입력" />
         </div>
 
         <div class="form-row">
           <label for="questionInput" data-i18n="qContent">질문 내용</label>
           <textarea id="questionInput" rows="3" maxlength="120"
+                    autocomplete="off"
                     data-i18n-placeholder="qPlaceholder"
                     placeholder="여기에 질문을 적어보세요 :)"></textarea>
         </div>
 
         <div class="form-row">
           <label for="authorInput" data-i18n="author">만든 사람</label>
+          <!-- name="qm-author-noautofill" + autocomplete="off" + readonly trick으로 자동완성 차단 -->
           <input type="text" id="authorInput" maxlength="20"
+                 name="qm-author-noautofill"
+                 autocomplete="off"
                  data-i18n-placeholder="authorPh" placeholder="이름 (선택)" />
         </div>
 
-        <div class="center-row">
+        <div class="center-row gap">
+          <button class="ghost-btn" id="resetBtn" data-i18n="reset">초기화</button>
           <button class="primary-btn" id="generateBtn" data-i18n="generate">생성하기</button>
         </div>
       </div>
@@ -122,20 +140,18 @@
                   <span class="card-cat" id="cardCatLabel">마음</span>
                 </div>
                 <div class="card-type-badge">
-                  <span class="card-type-emoji" id="cardTypeEmoji">💗</span>
                   <span class="card-type" id="cardTypeLabel">공감질문</span>
                 </div>
               </div>
               <div class="card-body">
-                <span class="quote-mark quote-open">"</span>
+                <span class="quote-mark quote-open">“</span>
                 <div class="card-question" id="cardQuestion"></div>
-                <span class="quote-mark quote-close">"</span>
+                <span class="quote-mark quote-close">”</span>
               </div>
               <div class="card-bottom">
-                <span class="card-character" id="cardCharacter">💗</span>
+                <span class="card-character" id="cardCharacter" aria-label="emoji"></span>
                 <span class="card-author" id="cardAuthor"></span>
               </div>
-              <div class="emoji-layer" id="emojiLayer"></div>
             </div>
           </div>
 
@@ -144,18 +160,16 @@
             <div class="card-label" data-i18n="cardBack">뒷면</div>
             <div class="card card-back" id="cardBack">
               <div class="back-mark">?</div>
-              <div class="back-title" data-i18n="backExplorerTitle">질문탐험대</div>
+              <div class="back-title" data-i18n="backTitle">질문카드</div>
               <div class="back-tagline">
-                <span data-i18n="backTaglineLine1">좋은 질문은</span><br>
-                <span data-i18n="backTaglineLine2">생각을 넘기고,</span><br>
-                <span data-i18n="backTaglineLine3">마음을 연결해요!</span>
+                <span data-i18n="backTagline">질문은 나의 세계</span>
               </div>
-              <div class="back-deco" id="backDeco">💗</div>
             </div>
           </div>
         </div>
 
         <div class="emoji-picker">
+          <p class="emoji-hint muted small" data-i18n="emojiHint">앞면 좌측 하단에 들어갈 이모지를 골라보세요.</p>
           <div class="emoji-tabs" id="emojiTabs">
             <button class="emoji-tab active" data-pack="face"   data-i18n="emojiFace">표정</button>
             <button class="emoji-tab" data-pack="hand"   data-i18n="emojiHand">손짓</button>
@@ -166,20 +180,7 @@
           </div>
           <div class="emoji-list" id="emojiList"></div>
 
-          <div class="emoji-controls" id="emojiControls" hidden>
-            <span class="small muted" data-i18n="selected">선택됨</span>
-            <label class="ctrl">
-              <span data-i18n="size">크기</span>
-              <input type="range" id="sizeRange" min="16" max="80" step="2" value="28" />
-            </label>
-            <label class="ctrl">
-              <span data-i18n="rotate">회전</span>
-              <input type="range" id="rotRange" min="-180" max="180" step="5" value="0" />
-            </label>
-            <button class="ghost-btn small-btn" id="delEmojiBtn" data-i18n="del">삭제</button>
-          </div>
-
-          <button class="ghost-btn" id="clearEmojiBtn" data-i18n="clearEmoji">모두 지우기</button>
+          <button class="ghost-btn small-btn" id="clearEmojiBtn" data-i18n="clearEmoji">이모지 제거</button>
         </div>
 
         <div class="action-row">
@@ -190,9 +191,9 @@
       </div>
     </section>
 
-    <!-- ============ 카드 탐험대 ============ -->
+    <!-- ============ 질문 탐험대 ============ -->
     <section class="view" id="view-explorer" hidden>
-      <h2 data-i18n="explorerTitle">카드 탐험대</h2>
+      <h2 data-i18n="explorerTitle">질문 탐험대</h2>
 
       <div class="form-row">
         <label data-i18n="filterCategory">카테고리 (여러 개 선택 가능)</label>
@@ -227,6 +228,20 @@
 
       <div class="draw-grid" id="drawGrid"></div>
     </section>
+
+    <!-- ============ 질문 로또 ============ -->
+    <section class="view" id="view-lotto" hidden>
+      <h2 data-i18n="lottoTitle">질문 로또</h2>
+      <p class="lotto-desc muted" data-i18n="lottoDesc">버튼을 눌러 무작위 질문 한 장을 만나보세요!</p>
+
+      <div class="lotto-stage" id="lottoStage">
+        <div class="lotto-empty muted" id="lottoEmpty" data-i18n="lottoEmpty">아직 카드를 뽑지 않았어요.</div>
+      </div>
+
+      <div class="action-row">
+        <button class="primary-btn" id="lottoDrawBtn" data-i18n="lottoDraw">뽑기!</button>
+      </div>
+    </section>
   </main>
 
   <footer class="app-footer">
@@ -241,11 +256,13 @@
       <button class="modal-close" id="helpClose" aria-label="close">✕</button>
       <h3 data-i18n="helpTitle">이렇게 사용해요!</h3>
       <ol class="help-list">
-        <li data-i18n="helpStep1">1) 카테고리와 질문 유형을 골라요.</li>
-        <li data-i18n="helpStep2">2) 질문을 적고 '생성하기'를 눌러요.</li>
-        <li data-i18n="helpStep3">3) 이모지로 카드를 꾸며요.</li>
-        <li data-i18n="helpStep4">4) 공유하기 / 내보내기로 친구에게 전달!</li>
+        <li data-i18n="helpStep1">카테고리와 질문 유형을 골라요.</li>
+        <li data-i18n="helpStep2">질문 내용과 만든 사람을 적고 ‘생성하기’를 눌러요.</li>
+        <li data-i18n="helpStep3">앞면 좌측 하단에 들어갈 이모지를 골라 카드를 꾸며요.</li>
+        <li data-i18n="helpStep4">‘공유하기’로 모두의 카드에 더하고, ‘내보내기’로 친구에게 보내요.</li>
+        <li data-i18n="helpStep5">‘질문 탐험대’에서 여러 장을 뽑고, ‘질문 로또’에서 한 장씩 꺼내봐요.</li>
       </ol>
+      <p class="muted small" data-i18n="helpTip">💡 입력한 내용은 자동 저장되니, 새로고침해도 그대로예요. ‘초기화’를 누르면 깨끗이 지워져요.</p>
     </div>
   </div>
 
@@ -271,6 +288,19 @@
       <p id="maxCardMsg" data-i18n="maxCardMsg">선택한 조건에서 만들 수 있는 카드 수가 부족해요.</p>
       <div class="center-row">
         <button class="primary-btn" id="maxCardOk" data-i18n="maxCardOk">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 초기화 확인 모달 -->
+  <div class="modal" id="resetModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="resetClose" aria-label="close">✕</button>
+      <h3 data-i18n="resetTitle">입력 내용을 초기화할까요?</h3>
+      <p class="muted small" data-i18n="resetDesc">선택한 카테고리/유형, 질문, 만든 사람이 모두 지워져요.</p>
+      <div class="action-row">
+        <button class="ghost-btn"   id="resetCancel" data-i18n="cancel">취소</button>
+        <button class="primary-btn" id="resetOk"     data-i18n="resetOk">초기화</button>
       </div>
     </div>
   </div>

@@ -10,14 +10,16 @@
   --purple: #E5D6FF;
   --purple-2:#C7A8FF;
   --ink:    #2b2b2b;
+  --ink-2:  #555;
   --muted:  #888;
   --bg:     #FFFBF5;
   --line:   #ececec;
   --soft-shadow: 0 8px 24px rgba(0,0,0,.08);
+  --card-shadow: 0 12px 32px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.04);
 
   /* 카드 비율: 63 x 88 mm */
-  --card-w: 252px;
-  --card-h: 352px;
+  --card-w: 260px;
+  --card-h: 360px;
 
   /* 레이아웃 폭 */
   --content-max: 1040px;
@@ -36,16 +38,22 @@ html[lang="ja"] body { font-family: 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans',
 
 /* ========== Header ========== */
 .app-header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   padding: 14px 20px;
   border-bottom: 1px solid var(--line);
   background: #fff;
+  gap: 8px;
 }
+.header-left { justify-self: start; }
 .app-title {
   font-family: 'Black Han Sans', sans-serif;
   font-size: 28px; margin: 0; letter-spacing: 1px;
+  justify-self: center;
+  text-align: center;
 }
-.header-right { display: flex; align-items: center; gap: 10px; }
+.header-right { display: flex; align-items: center; gap: 10px; justify-self: end; }
 
 .lang-dropdown { position: relative; }
 .lang-btn {
@@ -73,6 +81,7 @@ html[lang="ja"] body { font-family: 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans',
   padding: 12px 20px 0;
   max-width: var(--content-max); margin: 0 auto;
   justify-content: center;
+  flex-wrap: wrap;
 }
 .tab {
   border: none; background: transparent; padding: 10px 20px;
@@ -152,8 +161,30 @@ h2 { margin-top: 0; text-align: center; }
 .center-row {
   display: flex; justify-content: center; margin-top: 10px;
 }
+.center-row.gap { gap: 12px; flex-wrap: wrap; }
 
-/* ========== Card (new design) ========== */
+/* ========== Count banner (전체 카드 수) ========== */
+.count-banner {
+  max-width: 460px;
+  margin: 0 auto 24px;
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: linear-gradient(135deg, #fff8e8 0%, #fff 60%, #fdf3ff 100%);
+  border: 1px solid #f3e9d2;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+}
+.count-icon { font-size: 26px; line-height: 1; }
+.count-text { font-size: 14px; color: var(--ink-2); }
+.count-num {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 26px;
+  color: var(--ink);
+  margin: 0 4px;
+  letter-spacing: 1px;
+}
+
+/* ========== Card (refined design) ========== */
 .card-stage {
   display: flex; flex-wrap: wrap; gap: 32px; margin: 20px auto 28px;
   justify-content: center;
@@ -164,12 +195,12 @@ h2 { margin-top: 0; text-align: center; }
 .card {
   width: var(--card-w);
   height: var(--card-h);
-  border-radius: 22px;
+  border-radius: 24px;
   background: var(--pink);
-  box-shadow: var(--soft-shadow);
+  box-shadow: var(--card-shadow);
   position: relative;
   overflow: hidden;
-  padding: 18px 18px 16px;
+  padding: 20px 20px 18px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -183,21 +214,24 @@ h2 { margin-top: 0; text-align: center; }
 }
 .card-cat-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.7);
   padding: 5px 12px 5px 8px;
-  border-radius: 16px;
-  font-size: 13px; font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  color: var(--ink);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,.55);
 }
-.card-cat-emoji { font-size: 16px; line-height: 1; }
+.card-cat-emoji { font-size: 14px; line-height: 1; }
 .card-type-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: rgba(255,255,255,.6);
-  padding: 4px 10px;
-  border-radius: 14px;
-  font-size: 11px; font-weight: 700; color: #555;
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,.55);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 700; color: var(--ink-2);
+  border: 1px solid rgba(255,255,255,.5);
+  backdrop-filter: blur(4px);
 }
-.card-type-emoji { font-size: 13px; line-height: 1; }
 
 .card-body {
   flex: 1;
@@ -205,118 +239,115 @@ h2 { margin-top: 0; text-align: center; }
   align-items: center; justify-content: center;
   text-align: center;
   position: relative;
-  padding: 12px 8px 4px;
+  padding: 8px 6px;
   z-index: 2;
 }
 .quote-mark {
-  font-family: 'Black Han Sans', serif;
-  font-size: 36px;
-  line-height: 0.6;
-  color: rgba(0,0,0,.18);
+  font-family: 'Noto Serif KR', 'Black Han Sans', Georgia, serif;
+  font-size: 56px;
+  line-height: 0.3;
+  color: rgba(0,0,0,.22);
   font-weight: 700;
   user-select: none;
+  letter-spacing: -2px;
 }
-.quote-mark.quote-open  { align-self: flex-start; margin-left: 4px; margin-bottom: 0; }
-.quote-mark.quote-close { align-self: flex-end;   margin-right: 4px; margin-top: 8px; transform: rotate(180deg); }
+.quote-mark.quote-open  { align-self: flex-start; margin-left: 2px; margin-bottom: 0; margin-top: 16px; }
+.quote-mark.quote-close { align-self: flex-end;   margin-right: 2px; margin-top: 4px; margin-bottom: 6px; }
 .card-question {
   font-size: 18px; font-weight: 700; line-height: 1.55;
   white-space: pre-wrap; word-break: keep-all;
-  margin: 6px 4px;
+  margin: 4px 4px;
+  color: var(--ink);
 }
 
 .card-bottom {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; position: relative; z-index: 2;
-  min-height: 24px;
+  min-height: 28px;
 }
 .card-character {
-  font-size: 26px; line-height: 1;
+  font-size: 28px; line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.08));
+  min-width: 28px; min-height: 28px;
+  display: inline-flex; align-items: center;
 }
 .card-author {
-  font-size: 11px; color: rgba(0,0,0,.5); font-weight: 600;
+  font-size: 11px; color: rgba(0,0,0,.55); font-weight: 600;
   max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* 그라데이션 살짝 — 어린이 친화 부드러움 */
+/* 그라데이션 — 어린이 친화 부드러움 */
 .card-front::before {
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(circle at 100% 0%, rgba(255,255,255,.45), transparent 45%),
-    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 50%);
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.5), transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 55%);
   pointer-events: none;
   z-index: 1;
 }
 
-.emoji-layer {
-  position: absolute; inset: 0; pointer-events: none;
-  z-index: 3;
-}
-.emoji-layer .emoji {
-  position: absolute; font-size: 28px; user-select: none;
-  pointer-events: auto; cursor: grab;
-}
-.emoji-layer .emoji.selected {
-  outline: 2px dashed var(--ink); outline-offset: 2px; border-radius: 4px;
-}
-
-/* === BACK (질문탐험대 - watercolor splash style) === */
+/* === BACK (질문카드 / 질문은 나의 세계) === */
 .card-back {
   background: #fff;
   align-items: center; justify-content: center; text-align: center;
   position: relative;
-  padding: 24px 20px;
+  padding: 28px 22px;
 }
 .card-back::before {
-  /* 워터컬러 스플래시 — 카테고리 색 */
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(circle at 50% 28%, var(--bk-color, var(--pink)) 0%, transparent 65%),
-    radial-gradient(circle at 18% 78%, var(--bk-color-2, var(--pink-2)) 0%, transparent 38%),
-    radial-gradient(circle at 82% 80%, var(--bk-color-2, var(--pink-2)) 0%, transparent 38%);
-  opacity: .8;
+    radial-gradient(circle at 50% 32%, var(--bk-color, var(--pink)) 0%, transparent 65%),
+    radial-gradient(circle at 18% 82%, var(--bk-color-2, var(--pink-2)) 0%, transparent 40%),
+    radial-gradient(circle at 82% 84%, var(--bk-color-2, var(--pink-2)) 0%, transparent 40%);
+  opacity: .82;
   pointer-events: none;
 }
 .back-mark {
   position: relative; z-index: 2;
   font-family: 'Black Han Sans', sans-serif;
-  font-size: 56px; line-height: 1;
-  color: rgba(0,0,0,.5);
-  margin-top: 8px; margin-bottom: 6px;
+  font-size: 64px; line-height: 1;
+  color: rgba(0,0,0,.55);
+  margin-top: 18px; margin-bottom: 10px;
 }
 .back-title {
   position: relative; z-index: 2;
   font-family: 'Black Han Sans', sans-serif;
-  font-size: 32px; letter-spacing: 1px;
-  margin-bottom: 14px;
+  font-size: 34px; letter-spacing: 1px;
+  margin-bottom: 18px;
   color: var(--ink);
 }
 .back-tagline {
   position: relative; z-index: 2;
-  font-size: 13px; font-weight: 600; line-height: 1.7;
-  color: rgba(0,0,0,.65);
-}
-.back-deco {
-  position: relative; z-index: 2;
-  margin-top: 16px;
-  font-size: 22px;
+  font-size: 15px; font-weight: 700; line-height: 1.7;
+  color: rgba(0,0,0,.7);
+  letter-spacing: 0.5px;
 }
 
 /* ========== Emoji picker ========== */
 .emoji-picker {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  background: var(--bg); padding: 12px 14px; border-radius: 14px;
+  background: var(--bg); padding: 14px 16px; border-radius: 16px;
   margin: 0 auto 18px; max-width: 720px;
+  border: 1px solid #f0e9d8;
 }
-.emoji-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.emoji-hint {
+  width: 100%; text-align: center; margin: 0 0 4px;
+}
+.emoji-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; }
 .emoji-list button {
   background: #fff; border: 1px solid var(--line); border-radius: 10px;
   width: 38px; height: 38px; font-size: 20px; cursor: pointer;
-  transition: transform .08s ease;
+  transition: transform .08s ease, background .15s ease, border-color .15s ease;
+  padding: 0;
 }
 .emoji-list button:hover { transform: scale(1.1); }
+.emoji-list button.selected {
+  background: var(--yellow);
+  border-color: var(--yellow-2);
+  transform: scale(1.08);
+}
 .emoji-tabs { display: flex; gap: 4px; width: 100%; flex-wrap: wrap; justify-content: center; }
 .emoji-tab {
   background: #fff; border: 1px solid var(--line); border-radius: 14px;
@@ -324,11 +355,6 @@ h2 { margin-top: 0; text-align: center; }
 }
 .emoji-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
 
-.emoji-controls {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
-  width: 100%; padding-top: 8px; border-top: 1px dashed var(--line);
-}
-.emoji-controls .ctrl { display: flex; align-items: center; gap: 6px; font-size: 13px; }
 .small-btn { padding: 6px 12px; font-size: 13px; }
 
 /* ===== Card Explorer ===== */
@@ -367,7 +393,6 @@ h2 { margin-top: 0; text-align: center; }
   overflow: hidden;
 }
 
-/* draw-card back: same watercolor style */
 .draw-card .face.back {
   background: #fff;
   align-items: center; justify-content: center; text-align: center;
@@ -377,16 +402,16 @@ h2 { margin-top: 0; text-align: center; }
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(circle at 50% 28%, var(--bk-color, var(--pink)) 0%, transparent 65%),
-    radial-gradient(circle at 18% 78%, var(--bk-color-2, var(--pink-2)) 0%, transparent 38%),
-    radial-gradient(circle at 82% 80%, var(--bk-color-2, var(--pink-2)) 0%, transparent 38%);
-  opacity: .8;
+    radial-gradient(circle at 50% 32%, var(--bk-color, var(--pink)) 0%, transparent 65%),
+    radial-gradient(circle at 18% 82%, var(--bk-color-2, var(--pink-2)) 0%, transparent 40%),
+    radial-gradient(circle at 82% 84%, var(--bk-color-2, var(--pink-2)) 0%, transparent 40%);
+  opacity: .82;
   pointer-events: none;
 }
 .draw-card .face.back .b-mark {
   position: relative; z-index: 2;
-  font-family: 'Black Han Sans', sans-serif; font-size: 36px; line-height: 1;
-  color: rgba(0,0,0,.5); margin-bottom: 4px;
+  font-family: 'Black Han Sans', sans-serif; font-size: 40px; line-height: 1;
+  color: rgba(0,0,0,.55); margin-bottom: 4px;
 }
 .draw-card .face.back .b-title {
   position: relative; z-index: 2;
@@ -394,10 +419,8 @@ h2 { margin-top: 0; text-align: center; }
 }
 .draw-card .face.back .b-tagline {
   position: relative; z-index: 2;
-  font-size: 11px; font-weight: 600; line-height: 1.6; color: rgba(0,0,0,.6);
-}
-.draw-card .face.back .b-deco {
-  position: relative; z-index: 2; margin-top: 8px; font-size: 16px;
+  font-size: 12px; font-weight: 700; line-height: 1.6; color: rgba(0,0,0,.68);
+  letter-spacing: 0.3px;
 }
 
 .draw-card .face.front {
@@ -409,8 +432,8 @@ h2 { margin-top: 0; text-align: center; }
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(circle at 100% 0%, rgba(255,255,255,.4), transparent 45%),
-    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 50%);
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.45), transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 55%);
   pointer-events: none;
 }
 .draw-card .d-top {
@@ -419,14 +442,15 @@ h2 { margin-top: 0; text-align: center; }
 }
 .draw-card .d-cat {
   display: inline-flex; align-items: center; gap: 4px;
-  background: rgba(255,255,255,.85); padding: 3px 8px;
-  border-radius: 12px; font-size: 11px; font-weight: 700;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  background: rgba(255,255,255,.72); padding: 3px 9px;
+  border-radius: 999px; font-size: 11px; font-weight: 700;
+  border: 1px solid rgba(255,255,255,.55);
 }
 .draw-card .d-type {
-  display: inline-flex; align-items: center; gap: 3px;
-  background: rgba(255,255,255,.55); padding: 2px 7px;
-  border-radius: 10px; font-size: 10px; font-weight: 700; color: #555;
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,.5); padding: 2px 9px;
+  border-radius: 999px; font-size: 10px; font-weight: 700; color: var(--ink-2);
+  border: 1px solid rgba(255,255,255,.5);
 }
 .draw-card .d-body {
   flex: 1; display: flex; flex-direction: column;
@@ -438,19 +462,127 @@ h2 { margin-top: 0; text-align: center; }
   font-size: 13px; word-break: keep-all; white-space: pre-wrap;
 }
 .draw-card .d-quote-l, .draw-card .d-quote-r {
-  font-family: 'Black Han Sans', serif;
-  font-size: 22px; line-height: 0.5; color: rgba(0,0,0,.18); font-weight: 700;
+  font-family: 'Noto Serif KR', Georgia, serif;
+  font-size: 32px; line-height: 0.3; color: rgba(0,0,0,.22); font-weight: 700;
 }
-.draw-card .d-quote-l { align-self: flex-start; }
-.draw-card .d-quote-r { align-self: flex-end; transform: rotate(180deg); }
+.draw-card .d-quote-l { align-self: flex-start; margin-top: 8px; }
+.draw-card .d-quote-r { align-self: flex-end; margin-top: 4px; }
 .draw-card .d-bottom {
   display: flex; justify-content: space-between; align-items: center;
-  position: relative; z-index: 2; gap: 4px; min-height: 18px;
+  position: relative; z-index: 2; gap: 4px; min-height: 20px;
 }
 .draw-card .d-char { font-size: 18px; line-height: 1; }
 .draw-card .d-author {
   font-size: 9px; color: rgba(0,0,0,.5); font-weight: 600;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;
+}
+
+/* ===== Lotto view ===== */
+.lotto-desc { text-align: center; margin-top: -8px; margin-bottom: 18px; }
+.lotto-stage {
+  display: flex; justify-content: center; align-items: center;
+  min-height: 380px;
+  margin: 12px auto 18px;
+}
+.lotto-empty {
+  text-align: center;
+  font-size: 14px;
+  padding: 60px 20px;
+}
+.lotto-card {
+  width: var(--card-w); aspect-ratio: 63 / 88;
+  perspective: 1000px;
+  animation: lottoIn .5s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes lottoIn {
+  from { opacity: 0; transform: scale(.7) rotate(-8deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0); }
+}
+.lotto-card .flipper {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .6s ease;
+  cursor: pointer;
+}
+.lotto-card.flipped .flipper { transform: rotateY(180deg); }
+.lotto-card .face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: 22px;
+  box-shadow: var(--card-shadow);
+  padding: 18px; box-sizing: border-box;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.lotto-card .face.back   { background: #fff; align-items: center; justify-content: center; text-align: center; position: relative; }
+.lotto-card .face.front  { transform: rotateY(180deg); background: var(--pink); position: relative; }
+.lotto-card .face.back::before, .lotto-card .face.front::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+}
+.lotto-card .face.back::before {
+  background:
+    radial-gradient(circle at 50% 32%, var(--bk-color, var(--pink)) 0%, transparent 65%),
+    radial-gradient(circle at 18% 82%, var(--bk-color-2, var(--pink-2)) 0%, transparent 40%),
+    radial-gradient(circle at 82% 84%, var(--bk-color-2, var(--pink-2)) 0%, transparent 40%);
+  opacity: .82;
+}
+.lotto-card .face.front::before {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.45), transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 55%);
+}
+.lotto-card .face.back .b-mark {
+  position: relative; z-index: 2; font-family: 'Black Han Sans', sans-serif;
+  font-size: 60px; line-height: 1; color: rgba(0,0,0,.55); margin-bottom: 8px;
+}
+.lotto-card .face.back .b-title {
+  position: relative; z-index: 2; font-family: 'Black Han Sans', sans-serif;
+  font-size: 32px; margin-bottom: 14px;
+}
+.lotto-card .face.back .b-tagline {
+  position: relative; z-index: 2;
+  font-size: 14px; font-weight: 700; line-height: 1.7; color: rgba(0,0,0,.7);
+  letter-spacing: 0.4px;
+}
+.lotto-card .face.front .l-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  position: relative; z-index: 2;
+}
+.lotto-card .face.front .l-cat {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.7); padding: 5px 12px 5px 8px;
+  border-radius: 999px; font-size: 12px; font-weight: 700;
+  border: 1px solid rgba(255,255,255,.55);
+}
+.lotto-card .face.front .l-type {
+  background: rgba(255,255,255,.55); padding: 4px 12px;
+  border-radius: 999px; font-size: 11px; font-weight: 700; color: var(--ink-2);
+  border: 1px solid rgba(255,255,255,.5);
+}
+.lotto-card .face.front .l-body {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  position: relative; z-index: 2; padding: 8px 6px;
+}
+.lotto-card .face.front .l-q {
+  font-weight: 700; line-height: 1.55; font-size: 18px;
+  word-break: keep-all; white-space: pre-wrap; margin: 4px 4px;
+}
+.lotto-card .face.front .l-quote-l,
+.lotto-card .face.front .l-quote-r {
+  font-family: 'Noto Serif KR', Georgia, serif;
+  font-size: 56px; line-height: 0.3; color: rgba(0,0,0,.22); font-weight: 700;
+}
+.lotto-card .face.front .l-quote-l { align-self: flex-start; margin-top: 16px; }
+.lotto-card .face.front .l-quote-r { align-self: flex-end; margin-top: 4px; margin-bottom: 6px; }
+.lotto-card .face.front .l-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; position: relative; z-index: 2; min-height: 28px;
+}
+.lotto-card .face.front .l-char { font-size: 28px; line-height: 1; }
+.lotto-card .face.front .l-author {
+  font-size: 11px; color: rgba(0,0,0,.55); font-weight: 600;
+  max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 .admin-error-box {
@@ -489,7 +621,7 @@ h2 { margin-top: 0; text-align: center; }
 .modal-inner {
   background: #fff; border-radius: 18px;
   padding: 32px 28px 24px;
-  max-width: 92vw; width: 380px;
+  max-width: 92vw; width: 400px;
   position: relative;
   box-shadow: 0 12px 40px rgba(0,0,0,.18);
 }
@@ -510,7 +642,8 @@ h2 { margin-top: 0; text-align: center; }
   transition: background .15s ease;
 }
 .modal-close:hover { background: var(--bg); color: var(--ink); }
-.help-list { padding-left: 20px; line-height: 1.9; }
+.help-list { padding-left: 22px; line-height: 1.9; margin: 8px 0 12px; }
+.help-list li { padding-left: 4px; }
 .export-row { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 
 .muted { color: var(--muted); }
@@ -633,6 +766,9 @@ h2 { margin-top: 0; text-align: center; }
   .primary-btn { padding: 11px 22px; }
   .modal-inner { padding: 26px 20px 20px; }
 
+  .count-banner { padding: 12px 16px; }
+  .count-num { font-size: 22px; }
+
   /* admin */
   .admin-header { padding: 12px 14px; }
   .admin-header h2 { font-size: 18px; }
@@ -642,8 +778,8 @@ h2 { margin-top: 0; text-align: center; }
 
 @media (max-width: 480px) {
   :root {
-    --card-w: 220px;
-    --card-h: 308px;
+    --card-w: 224px;
+    --card-h: 312px;
   }
   .app-title { font-size: 20px; }
   .header-right { gap: 6px; }
@@ -656,10 +792,10 @@ h2 { margin-top: 0; text-align: center; }
   }
   .card-stage { gap: 16px; }
   .card-question { font-size: 16px; }
-  .quote-mark { font-size: 30px; }
-  .back-title { font-size: 26px; }
-  .back-mark { font-size: 44px; }
-  .back-tagline { font-size: 12px; }
+  .quote-mark { font-size: 46px; }
+  .back-title { font-size: 28px; }
+  .back-mark { font-size: 52px; }
+  .back-tagline { font-size: 13px; }
 
   .form-row { margin-bottom: 14px; }
   .chip-group { gap: 6px; }
@@ -672,17 +808,27 @@ h2 { margin-top: 0; text-align: center; }
   .draw-card { max-width: none; }
   .draw-card .d-q { font-size: 12px; }
   .draw-card .face.back .b-title { font-size: 18px; }
-  .draw-card .face.back .b-mark  { font-size: 30px; }
+  .draw-card .face.back .b-mark  { font-size: 32px; }
+
+  .lotto-card .face.front .l-q { font-size: 16px; }
+  .lotto-card .face.front .l-quote-l,
+  .lotto-card .face.front .l-quote-r { font-size: 46px; }
+  .lotto-card .face.back .b-title { font-size: 26px; }
+  .lotto-card .face.back .b-mark { font-size: 50px; }
 
   .action-row { gap: 8px; }
   .primary-btn { padding: 10px 18px; font-size: 14px; }
   .ghost-btn   { padding: 9px 14px; font-size: 14px; }
 
-  .emoji-picker { padding: 10px; }
+  .emoji-picker { padding: 12px; }
   .emoji-list button { width: 34px; height: 34px; font-size: 18px; }
 
   .modal-inner { padding: 24px 18px 18px; width: 100%; }
   .modal-inner h3 { font-size: 18px; }
+
+  .count-banner { padding: 10px 14px; gap: 8px; }
+  .count-text { font-size: 12px; }
+  .count-num { font-size: 20px; }
 
   /* admin: mobile */
   .admin-tools { width: 100%; }

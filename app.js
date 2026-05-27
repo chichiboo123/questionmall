@@ -5,6 +5,8 @@
   // 구글 Apps Script Web App URL. POST=저장, GET=목록 조회
   const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx_4o3UiJRXAwhOCeG3U7RNLkIEjfb3JXfA1vm0ec1GU7K_QcggXiXLApo8Viws8Uu8/exec';
 
+  const LS_KEY = 'questionmall.maker.v1';
+
   // ============ State ============
   const state = {
     lang: 'ko',
@@ -15,25 +17,20 @@
     qTypeEtc: '',
     question: '',
     author: '',
-    selectedEmoji: null, // currently selected emoji DOM node
+    selectedEmoji: '',   // 사용자가 고른 카드 좌측 하단 이모지 (한 글자)
     emojiPack: 'face',
-    deck: null, // cached fetched cards
+    deck: null,
+    lottoCard: null,
   };
 
   const CATEGORY_COLOR = {
     mind: '#FFD6E0', thought: '#D6E5FF', body: '#D6F5D6', relation: '#FFF4C2',
   };
-  // 카드 배경 워터컬러용 진한 보색 — back 그라데이션의 2차 색
   const CATEGORY_COLOR_2 = {
     mind: '#FFA8BD', thought: '#A8C8FF', body: '#A8E0A8', relation: '#FFE38A',
   };
-  // 카테고리 대표 이모지 (배지 + 캐릭터)
   const CATEGORY_EMOJI = {
     mind: '❤️', thought: '💭', body: '🏃', relation: '👥', etc: '⭐',
-  };
-  // 질문 유형 대표 이모지
-  const TYPE_EMOJI = {
-    empathy: '💗', imagine: '💫', exp: '🌱', dilemma: '⚖️', etc: '✨',
   };
 
   const EMOJI_PACKS = {
@@ -44,6 +41,9 @@
     animal: ['🐶','🐱','🦊','🦁','🐯','🐻','🐼','🐰','🐨','🐮','🐷','🐸','🐵','🐔','🐧','🐝','🐢','🦄'],
     symbol: ['💖','❤️','💛','💚','💙','💜','🖤','❗','❓','💡','📚','🎵','🎉','🎈','🏆','⚽','🎨','✏️'],
   };
+
+  const $  = sel => document.querySelector(sel);
+  const $$ = sel => document.querySelectorAll(sel);
 
   // ============ i18n ============
   function t(k){ return window.I18N[state.lang][k] || k; }
@@ -61,9 +61,6 @@
     document.getElementById('langCurrent').textContent = labels[lang];
     renderCardLabels();
   }
-
-  const $  = sel => document.querySelector(sel);
-  const $$ = sel => document.querySelectorAll(sel);
 
   function showToast(msg) {
     const t = $('#toast'); t.textContent = msg; t.hidden = false;
@@ -89,12 +86,14 @@
 
   // ============ Tabs ============
   $$('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', async () => {
       $$('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const w = tab.dataset.tab;
       $('#view-maker').hidden    = w !== 'maker';
       $('#view-explorer').hidden = w !== 'explorer';
+      $('#view-lotto').hidden    = w !== 'lotto';
+      if (w === 'maker') refreshCardCount();
     });
   });
 
@@ -108,12 +107,16 @@
     const isEtc = state.category === 'etc';
     $('#categoryEtcInput').hidden = !isEtc;
     $('#etcPalette').hidden = !isEtc;
+    saveLocal();
   });
-  $('#categoryEtcInput').addEventListener('input', e => { state.categoryEtc = e.target.value.trim(); });
+  $('#categoryEtcInput').addEventListener('input', e => {
+    state.categoryEtc = e.target.value.trim(); saveLocal();
+  });
   $('#etcPalette').addEventListener('click', e => {
     const sw = e.target.closest('.swatch'); if (!sw) return;
     $('#etcPalette').querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
     sw.classList.add('active'); state.etcColor = sw.dataset.color;
+    saveLocal();
   });
 
   const typeChips = $('#typeChips');
@@ -123,23 +126,115 @@
     chip.classList.add('active');
     state.qType = chip.dataset.value;
     $('#typeEtcInput').hidden = state.qType !== 'etc';
+    saveLocal();
   });
-  $('#typeEtcInput').addEventListener('input', e => { state.qTypeEtc = e.target.value.trim(); });
+  $('#typeEtcInput').addEventListener('input', e => {
+    state.qTypeEtc = e.target.value.trim(); saveLocal();
+  });
 
-  // 작성자
-  $('#authorInput').addEventListener('input', e => { state.author = e.target.value.trim(); });
+  $('#questionInput').addEventListener('input', () => { saveLocal(); });
+  $('#authorInput').addEventListener('input', e => {
+    state.author = e.target.value.trim(); saveLocal();
+  });
+
+  // ============ LocalStorage persistence ============
+  function saveLocal() {
+    const data = {
+      category: state.category,
+      categoryEtc: state.categoryEtc,
+      etcColor: state.etcColor,
+      qType: state.qType,
+      qTypeEtc: state.qTypeEtc,
+      question: $('#questionInput').value,
+      author: state.author,
+      selectedEmoji: state.selectedEmoji,
+    };
+    try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch {}
+  }
+
+  function loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.category) {
+        const chip = categoryChips.querySelector(`.chip[data-value="${data.category}"]`);
+        if (chip) {
+          categoryChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          state.category = data.category;
+          if (data.category === 'etc') {
+            $('#categoryEtcInput').hidden = false;
+            $('#etcPalette').hidden = false;
+          }
+        }
+      }
+      if (data.categoryEtc) {
+        state.categoryEtc = data.categoryEtc;
+        $('#categoryEtcInput').value = data.categoryEtc;
+      }
+      if (data.etcColor) {
+        state.etcColor = data.etcColor;
+        const sw = $('#etcPalette').querySelector(`.swatch[data-color="${data.etcColor}"]`);
+        if (sw) { $('#etcPalette').querySelectorAll('.swatch').forEach(s => s.classList.remove('active')); sw.classList.add('active'); }
+      }
+      if (data.qType) {
+        const chip = typeChips.querySelector(`.chip[data-value="${data.qType}"]`);
+        if (chip) {
+          typeChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          state.qType = data.qType;
+          if (data.qType === 'etc') $('#typeEtcInput').hidden = false;
+        }
+      }
+      if (data.qTypeEtc) {
+        state.qTypeEtc = data.qTypeEtc;
+        $('#typeEtcInput').value = data.qTypeEtc;
+      }
+      if (data.question) $('#questionInput').value = data.question;
+      if (data.author) {
+        state.author = data.author;
+        $('#authorInput').value = data.author;
+      }
+      if (data.selectedEmoji) state.selectedEmoji = data.selectedEmoji;
+    } catch (e) { console.warn('loadLocal failed', e); }
+  }
+
+  // ============ Reset ============
+  $('#resetBtn').addEventListener('click', () => { $('#resetModal').hidden = false; });
+  $('#resetClose').addEventListener('click',  () => { $('#resetModal').hidden = true; });
+  $('#resetCancel').addEventListener('click', () => { $('#resetModal').hidden = true; });
+  $('#resetOk').addEventListener('click', () => {
+    state.category = null; state.categoryEtc = ''; state.etcColor = '#FFD6E0';
+    state.qType = null; state.qTypeEtc = '';
+    state.question = ''; state.author = ''; state.selectedEmoji = '';
+
+    categoryChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    typeChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    $('#categoryEtcInput').value = ''; $('#categoryEtcInput').hidden = true;
+    $('#typeEtcInput').value = '';     $('#typeEtcInput').hidden = true;
+    $('#etcPalette').hidden = true;
+    $('#etcPalette').querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    $('#questionInput').value = '';
+    $('#authorInput').value = '';
+
+    try { localStorage.removeItem(LS_KEY); } catch {}
+    $('#resetModal').hidden = true;
+    showToast(t('toastReset'));
+  });
 
   // ============ Generate ============
   $('#generateBtn').addEventListener('click', () => {
     const q = $('#questionInput').value.trim();
     if (!q) { showToast(t('toastNeedQ')); return; }
-    if (!state.category) { showToast('카테고리를 선택해 주세요.'); return; }
-    if (!state.qType)    { showToast('질문 유형을 선택해 주세요.'); return; }
+    if (!state.category) { showToast(t('toastNeedCat')); return; }
+    if (!state.qType)    { showToast(t('toastNeedType')); return; }
     state.question = q;
     state.author = $('#authorInput').value.trim();
     renderCardFront(); renderCardBack(); renderCardLabels(); autosizeQuestion();
     $('#step-input').hidden = true;
     $('#step-decorate').hidden = false;
+    saveLocal();
   });
   $('#backToInputBtn').addEventListener('click', () => {
     $('#step-decorate').hidden = true; $('#step-input').hidden = false;
@@ -162,9 +257,6 @@
   function getCategoryEmoji() {
     return CATEGORY_EMOJI[state.category] || '⭐';
   }
-  function getTypeEmoji() {
-    return TYPE_EMOJI[state.qType] || '✨';
-  }
   function getTypeLabel() {
     const d = window.I18N[state.lang];
     const map = { empathy:'typeEmpathy', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
@@ -178,26 +270,20 @@
     front.style.background = getCardColor();
     $('#cardQuestion').textContent = state.question;
     $('#cardCatEmoji').textContent = getCategoryEmoji();
-    $('#cardTypeEmoji').textContent = getTypeEmoji();
-    $('#cardCharacter').textContent = getCategoryEmoji();
+    $('#cardCharacter').textContent = state.selectedEmoji || '';
     const authorEl = $('#cardAuthor');
-    if (state.author) {
-      authorEl.textContent = '— ' + state.author;
-    } else {
-      authorEl.textContent = '';
-    }
+    authorEl.textContent = state.author ? '— ' + state.author : '';
+    syncEmojiPickerSelection();
   }
   function renderCardBack() {
     const back = $('#cardBack');
     back.style.setProperty('--bk-color',   getCardColor());
     back.style.setProperty('--bk-color-2', getCardColor2());
-    $('#backDeco').textContent = getCategoryEmoji();
   }
   function renderCardLabels() {
     if ($('#cardCatLabel'))  $('#cardCatLabel').textContent  = getCategoryLabel();
     if ($('#cardTypeLabel')) $('#cardTypeLabel').textContent = getTypeLabel();
   }
-  // 글자 수에 따라 폰트 크기 보정
   function autosizeQuestion() {
     const el = $('#cardQuestion'); const len = state.question.length;
     let size = 18;
@@ -207,16 +293,17 @@
     el.style.fontSize = size + 'px';
   }
 
-  // ============ Emoji picker ============
+  // ============ Emoji picker (single-slot, fixed position) ============
   const emojiList = $('#emojiList');
   function renderEmojiPack(pack) {
     emojiList.innerHTML = '';
     EMOJI_PACKS[pack].forEach(em => {
       const b = document.createElement('button');
       b.type = 'button'; b.textContent = em;
-      b.addEventListener('click', () => addEmojiToCard(em));
+      b.addEventListener('click', () => setCardEmoji(em));
       emojiList.appendChild(b);
     });
+    syncEmojiPickerSelection();
   }
   $('#emojiTabs').addEventListener('click', e => {
     const t = e.target.closest('.emoji-tab'); if (!t) return;
@@ -225,90 +312,23 @@
     state.emojiPack = t.dataset.pack;
     renderEmojiPack(state.emojiPack);
   });
-
   $('#clearEmojiBtn').addEventListener('click', () => {
-    $('#emojiLayer').innerHTML = ''; deselectEmoji();
+    state.selectedEmoji = '';
+    $('#cardCharacter').textContent = '';
+    syncEmojiPickerSelection();
+    saveLocal();
   });
 
-  function addEmojiToCard(em) {
-    const layer = $('#emojiLayer');
-    const node = document.createElement('span');
-    node.className = 'emoji';
-    node.textContent = em;
-    node.dataset.size = '28';
-    node.dataset.rot = '0';
-    const x = 40 + Math.random() * 160;
-    const y = 120 + Math.random() * 180;
-    node.style.left = x + 'px';
-    node.style.top  = y + 'px';
-    applyEmojiTransform(node);
-    makeDraggable(node, layer);
-    node.addEventListener('pointerdown', () => selectEmoji(node));
-    node.addEventListener('dblclick', () => { if (state.selectedEmoji === node) deselectEmoji(); node.remove(); });
-    layer.appendChild(node);
-    selectEmoji(node);
+  function setCardEmoji(em) {
+    state.selectedEmoji = em;
+    $('#cardCharacter').textContent = em;
+    syncEmojiPickerSelection();
+    saveLocal();
   }
-
-  function applyEmojiTransform(node) {
-    node.style.fontSize = node.dataset.size + 'px';
-    node.style.transform = `rotate(${node.dataset.rot}deg)`;
-  }
-
-  function selectEmoji(node) {
-    if (state.selectedEmoji) state.selectedEmoji.classList.remove('selected');
-    state.selectedEmoji = node;
-    node.classList.add('selected');
-    $('#emojiControls').hidden = false;
-    $('#sizeRange').value = node.dataset.size;
-    $('#rotRange').value  = node.dataset.rot;
-  }
-  function deselectEmoji() {
-    if (state.selectedEmoji) state.selectedEmoji.classList.remove('selected');
-    state.selectedEmoji = null;
-    $('#emojiControls').hidden = true;
-  }
-
-  $('#sizeRange').addEventListener('input', e => {
-    if (!state.selectedEmoji) return;
-    state.selectedEmoji.dataset.size = e.target.value;
-    applyEmojiTransform(state.selectedEmoji);
-  });
-  $('#rotRange').addEventListener('input', e => {
-    if (!state.selectedEmoji) return;
-    state.selectedEmoji.dataset.rot = e.target.value;
-    applyEmojiTransform(state.selectedEmoji);
-  });
-  $('#delEmojiBtn').addEventListener('click', () => {
-    if (!state.selectedEmoji) return;
-    const n = state.selectedEmoji; deselectEmoji(); n.remove();
-  });
-
-  // 카드 빈 영역 클릭 시 선택 해제
-  $('#cardFront').addEventListener('pointerdown', e => {
-    if (!e.target.classList.contains('emoji')) deselectEmoji();
-  });
-
-  function makeDraggable(node, container) {
-    let sx, sy, ox, oy, dragging = false;
-    node.addEventListener('pointerdown', e => {
-      dragging = true;
-      sx = e.clientX; sy = e.clientY;
-      ox = parseFloat(node.style.left) || 0;
-      oy = parseFloat(node.style.top)  || 0;
-      node.setPointerCapture(e.pointerId);
+  function syncEmojiPickerSelection() {
+    emojiList.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('selected', !!state.selectedEmoji && b.textContent === state.selectedEmoji);
     });
-    node.addEventListener('pointermove', e => {
-      if (!dragging) return;
-      const rect = container.getBoundingClientRect();
-      const sz = parseFloat(node.dataset.size);
-      let nx = ox + (e.clientX - sx);
-      let ny = oy + (e.clientY - sy);
-      nx = Math.max(0, Math.min(rect.width  - sz, nx));
-      ny = Math.max(0, Math.min(rect.height - sz, ny));
-      node.style.left = nx + 'px';
-      node.style.top  = ny + 'px';
-    });
-    node.addEventListener('pointerup', () => { dragging = false; });
   }
 
   // ============ Share (Apps Script) ============
@@ -331,8 +351,9 @@
     }
     try {
       await postToScript({ action: 'create', ...payload });
-      state.deck = null; // invalidate cache
+      state.deck = null;
       showToast(t('toastShared'));
+      refreshCardCount();
     } catch (err) { console.error(err); showToast(t('toastShareFail')); }
   });
 
@@ -353,6 +374,23 @@
     }
   }
 
+  // ============ Card count (first page) ============
+  async function refreshCardCount() {
+    const el = $('#cardCountNum');
+    if (!el) return;
+    if (!SHEETS_WEBAPP_URL) {
+      el.textContent = String(DEMO_DECK.length);
+      return;
+    }
+    try {
+      const res = await fetch(SHEETS_WEBAPP_URL + '?action=count');
+      const data = await res.json();
+      el.textContent = String(typeof data.count === 'number' ? data.count : '—');
+    } catch {
+      el.textContent = '—';
+    }
+  }
+
   // ============ Export ============
   $('#exportBtn').addEventListener('click', () => { $('#exportModal').hidden = false; });
   $('#exportClose').addEventListener('click', () => { $('#exportModal').hidden = true; });
@@ -366,7 +404,6 @@
     a.download = name; a.click();
   }
   $('#dlFrontBtn').addEventListener('click', async () => {
-    deselectEmoji();
     const c = await cardToCanvas($('#cardFront')); downloadCanvas(c, 'question-card-front.jpg');
   });
   $('#dlBackBtn').addEventListener('click', async () => {
@@ -374,7 +411,6 @@
   });
   $('#copyFrontBtn').addEventListener('click', async () => {
     try {
-      deselectEmoji();
       const c = await cardToCanvas($('#cardFront'));
       const blob = await new Promise(res => c.toBlob(res, 'image/png'));
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
@@ -416,7 +452,7 @@
 
   function selectedValues(container) {
     const chips = [...container.querySelectorAll('.chip.active')];
-    if (chips.some(c => c.dataset.value === 'all')) return null; // null = all
+    if (chips.some(c => c.dataset.value === 'all')) return null;
     return chips.map(c => c.dataset.value);
   }
 
@@ -475,7 +511,6 @@
       return;
     }
     const requested = Math.max(1, Math.min(30, parseInt($('#drawCount').value, 10) || 1));
-    // 풀이 부족하면 팝업으로 안내 + 가능한 만큼만 뽑기 (중복 없이)
     let n = requested;
     if (requested > pool.length) {
       n = pool.length;
@@ -498,7 +533,6 @@
     return d[map[value]] || value || '';
   }
   function catEmojiFor(value) { return CATEGORY_EMOJI[value] || '⭐'; }
-  function typeEmojiFor(value){ return TYPE_EMOJI[value] || '✨'; }
   function catColor2For(value){ return CATEGORY_COLOR_2[value] || '#FFA8BD'; }
 
   function buildDrawCard(card) {
@@ -509,29 +543,23 @@
     const catLabel  = card.categoryLabel || categoryLabelFor(card.category);
     const typeLabel = card.typeLabel || typeLabelFor(card.type);
     const catEm  = catEmojiFor(card.category);
-    const typeEm = typeEmojiFor(card.type);
     const author = card.author ? `— ${escapeHtml(card.author)}` : '';
     wrap.innerHTML = `
       <div class="flipper">
         <div class="face back" style="--bk-color:${color};--bk-color-2:${color2}">
           <div class="b-mark">?</div>
-          <div class="b-title">${escapeHtml(t('backExplorerTitle'))}</div>
-          <div class="b-tagline">
-            ${escapeHtml(t('backTaglineLine1'))}<br>
-            ${escapeHtml(t('backTaglineLine2'))}<br>
-            ${escapeHtml(t('backTaglineLine3'))}
-          </div>
-          <div class="b-deco">${catEm}</div>
+          <div class="b-title">${escapeHtml(t('backTitle'))}</div>
+          <div class="b-tagline">${escapeHtml(t('backTagline'))}</div>
         </div>
         <div class="face front" style="background:${color}">
           <div class="d-top">
             <div class="d-cat"><span>${catEm}</span><span>${escapeHtml(catLabel)}</span></div>
-            <div class="d-type"><span>${typeEm}</span><span>${escapeHtml(typeLabel)}</span></div>
+            <div class="d-type"><span>${escapeHtml(typeLabel)}</span></div>
           </div>
           <div class="d-body">
-            <span class="d-quote-l">"</span>
+            <span class="d-quote-l">“</span>
             <div class="d-q">${escapeHtml(card.question)}</div>
-            <span class="d-quote-r">"</span>
+            <span class="d-quote-r">”</span>
           </div>
           <div class="d-bottom">
             <span class="d-char">${catEm}</span>
@@ -552,6 +580,65 @@
     const anyClosed = [...cards].some(c => !c.classList.contains('flipped'));
     cards.forEach(c => c.classList.toggle('flipped', anyClosed));
   });
+
+  // ============ Lotto ============
+  $('#lottoDrawBtn').addEventListener('click', async () => {
+    const stage = $('#lottoStage');
+    const btn = $('#lottoDrawBtn');
+    stage.innerHTML = `<div class="lotto-empty muted">${t('loading')}</div>`;
+    const deck = await fetchDeck();
+    if (!deck.length) {
+      stage.innerHTML = `<div class="lotto-empty muted">${t('emptyLotto')}</div>`;
+      return;
+    }
+    // 새로 뽑은 카드는 이전 카드와 같지 않도록 — 한 장 이상이면 보장
+    let card;
+    let tries = 0;
+    do { card = deck[Math.floor(Math.random() * deck.length)]; tries++; }
+    while (deck.length > 1 && state.lottoCard
+           && card.question === state.lottoCard.question && tries < 12);
+    state.lottoCard = card;
+    stage.innerHTML = '';
+    stage.appendChild(buildLottoCard(card));
+    btn.setAttribute('data-i18n', 'lottoRedraw');
+    btn.textContent = t('lottoRedraw');
+  });
+
+  function buildLottoCard(card) {
+    const wrap = document.createElement('div');
+    wrap.className = 'lotto-card flipped'; // 처음엔 앞면(질문) 바로 보이도록
+    const color  = card.color || CATEGORY_COLOR[card.category] || '#FFD6E0';
+    const color2 = catColor2For(card.category);
+    const catLabel  = card.categoryLabel || categoryLabelFor(card.category);
+    const typeLabel = card.typeLabel || typeLabelFor(card.type);
+    const catEm  = catEmojiFor(card.category);
+    const author = card.author ? `— ${escapeHtml(card.author)}` : '';
+    wrap.innerHTML = `
+      <div class="flipper">
+        <div class="face back" style="--bk-color:${color};--bk-color-2:${color2}">
+          <div class="b-mark">?</div>
+          <div class="b-title">${escapeHtml(t('backTitle'))}</div>
+          <div class="b-tagline">${escapeHtml(t('backTagline'))}</div>
+        </div>
+        <div class="face front" style="background:${color}">
+          <div class="l-top">
+            <div class="l-cat"><span>${catEm}</span><span>${escapeHtml(catLabel)}</span></div>
+            <div class="l-type"><span>${escapeHtml(typeLabel)}</span></div>
+          </div>
+          <div class="l-body">
+            <span class="l-quote-l">“</span>
+            <div class="l-q">${escapeHtml(card.question)}</div>
+            <span class="l-quote-r">”</span>
+          </div>
+          <div class="l-bottom">
+            <span class="l-char">${catEm}</span>
+            <span class="l-author">${author}</span>
+          </div>
+        </div>
+      </div>`;
+    wrap.addEventListener('click', () => wrap.classList.toggle('flipped'));
+    return wrap;
+  }
 
   // ============ Admin Mode ============
   let adminPw = null;
@@ -752,6 +839,7 @@
       adminItems = adminItems.filter(x => x.id !== id);
       state.deck = null;
       renderAdmin();
+      refreshCardCount();
       showToast(t('deleted'));
     } catch (e) {
       console.error(e); showToast(t('saveFail'));
@@ -812,6 +900,6 @@
   // ============ Init ============
   applyLang('ko');
   renderEmojiPack('face');
-  categoryChips.querySelector('.chip[data-value="mind"]').click();
-  typeChips.querySelector('.chip[data-value="empathy"]').click();
+  loadLocal();
+  refreshCardCount();
 })();
