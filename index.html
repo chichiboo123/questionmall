@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>질문 다있소</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title" data-i18n="appTitle">질문 다있소</h1>
+
+    <div class="header-right">
+      <div class="lang-dropdown">
+        <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
+          <span id="langCurrent">한국어</span>
+          <span class="caret">▾</span>
+        </button>
+        <ul class="lang-menu" id="langMenu" role="listbox" hidden>
+          <li role="option" data-lang="ko">한국어</li>
+          <li role="option" data-lang="en">English</li>
+          <li role="option" data-lang="ja">日本語</li>
+        </ul>
+      </div>
+
+      <button class="help-btn" id="helpBtn" aria-label="help" title="사용법">?</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="maker" data-i18n="tabMaker">카드 제작소</button>
+    <button class="tab" data-tab="explorer" data-i18n="tabExplorer">카드 탐험대</button>
+  </nav>
+
+  <main class="app-main">
+    <!-- ============ 카드 제작소 ============ -->
+    <section class="view" id="view-maker">
+      <!-- STEP 1: 정보 입력 -->
+      <div class="step" id="step-input">
+        <h2 data-i18n="makerStep1Title">카드 정보 입력</h2>
+
+        <div class="form-row">
+          <label data-i18n="category">카테고리</label>
+          <div class="chip-group" id="categoryChips">
+            <button class="chip cat-mind"     data-value="mind"        data-i18n="catMind">마음</button>
+            <button class="chip cat-thought"  data-value="thought"     data-i18n="catThought">생각</button>
+            <button class="chip cat-body"     data-value="body"        data-i18n="catBody">몸</button>
+            <button class="chip cat-relation" data-value="relation"    data-i18n="catRelation">관계</button>
+            <button class="chip cat-etc"      data-value="etc"         data-i18n="catEtc">기타</button>
+          </div>
+          <input type="text" id="categoryEtcInput" class="etc-input" hidden
+                 data-i18n-placeholder="categoryEtcPh" placeholder="카테고리 직접 입력" />
+
+          <div class="palette" id="etcPalette" hidden>
+            <span data-i18n="pickColor">색상 선택</span>
+            <button class="swatch" style="background:#FFD6E0" data-color="#FFD6E0"></button>
+            <button class="swatch" style="background:#D6E5FF" data-color="#D6E5FF"></button>
+            <button class="swatch" style="background:#D6F5D6" data-color="#D6F5D6"></button>
+            <button class="swatch" style="background:#FFF4C2" data-color="#FFF4C2"></button>
+            <button class="swatch" style="background:#E5D6FF" data-color="#E5D6FF"></button>
+            <button class="swatch" style="background:#FFE0C2" data-color="#FFE0C2"></button>
+            <button class="swatch" style="background:#C2F0F0" data-color="#C2F0F0"></button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="qType">질문 유형</label>
+          <div class="chip-group" id="typeChips">
+            <button class="chip" data-value="empathy"  data-i18n="typeEmpathy">공감질문</button>
+            <button class="chip" data-value="imagine"  data-i18n="typeImagine">상상질문</button>
+            <button class="chip" data-value="exp"      data-i18n="typeExp">경험질문</button>
+            <button class="chip" data-value="dilemma"  data-i18n="typeDilemma">딜레마질문</button>
+            <button class="chip" data-value="etc"      data-i18n="typeEtc">기타</button>
+          </div>
+          <input type="text" id="typeEtcInput" class="etc-input" hidden
+                 data-i18n-placeholder="typeEtcPh" placeholder="질문 유형 직접 입력" />
+        </div>
+
+        <div class="form-row">
+          <label for="questionInput" data-i18n="qContent">질문 내용</label>
+          <textarea id="questionInput" rows="3" maxlength="120"
+                    data-i18n-placeholder="qPlaceholder"
+                    placeholder="여기에 질문을 적어보세요 :)"></textarea>
+        </div>
+
+        <button class="primary-btn" id="generateBtn" data-i18n="generate">생성하기</button>
+      </div>
+
+      <!-- STEP 2: 카드 꾸미기 -->
+      <div class="step" id="step-decorate" hidden>
+        <h2 data-i18n="makerStep2Title">카드 꾸미기</h2>
+
+        <div class="card-stage">
+          <!-- 카드 앞면 -->
+          <div class="card-wrap">
+            <div class="card-label" data-i18n="cardFront">앞면</div>
+            <div class="card card-front" id="cardFront">
+              <div class="card-cat" id="cardCatLabel">마음</div>
+              <div class="card-type" id="cardTypeLabel">공감질문</div>
+              <div class="card-question" id="cardQuestion"></div>
+              <div class="emoji-layer" id="emojiLayer"></div>
+            </div>
+          </div>
+
+          <!-- 카드 뒷면 -->
+          <div class="card-wrap">
+            <div class="card-label" data-i18n="cardBack">뒷면</div>
+            <div class="card card-back" id="cardBack">
+              <div class="back-title" data-i18n="backTitle">질문카드</div>
+              <div class="back-sentence">
+                <span data-i18n="backSentence1">질문은</span>
+                <span class="blank">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</span>
+                <span data-i18n="backSentence2">문이다</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="emoji-picker">
+          <span data-i18n="addEmoji">이모지 추가</span>
+          <div class="emoji-list" id="emojiList">
+            <!-- populated by JS -->
+          </div>
+          <button class="ghost-btn" id="clearEmojiBtn" data-i18n="clearEmoji">모두 지우기</button>
+        </div>
+
+        <div class="action-row">
+          <button class="ghost-btn" id="backToInputBtn" data-i18n="back">← 다시 입력</button>
+          <button class="primary-btn" id="shareBtn" data-i18n="share">공유하기</button>
+          <button class="primary-btn" id="exportBtn" data-i18n="export">내보내기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 카드 탐험대 (스캐폴드) ============ -->
+    <section class="view" id="view-explorer" hidden>
+      <h2 data-i18n="explorerTitle">카드 탐험대</h2>
+      <p class="muted" data-i18n="explorerComing">곧 만나요! (다음 단계에서 구현)</p>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <a href="https://litt.ly/chichiboo" target="_blank" rel="noopener">
+      Created by. 교육뮤지컬 꿈꾸는 치수쌤
+    </a>
+  </footer>
+
+  <!-- 사용법 모달 -->
+  <div class="modal" id="helpModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="helpClose" aria-label="close">✕</button>
+      <h3 data-i18n="helpTitle">이렇게 사용해요!</h3>
+      <ol class="help-list">
+        <li data-i18n="helpStep1">1) 카테고리와 질문 유형을 골라요.</li>
+        <li data-i18n="helpStep2">2) 질문을 적고 '생성하기'를 눌러요.</li>
+        <li data-i18n="helpStep3">3) 이모지로 카드를 꾸며요.</li>
+        <li data-i18n="helpStep4">4) 공유하기 / 내보내기로 친구에게 전달!</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 내보내기 모달 -->
+  <div class="modal" id="exportModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="exportClose" aria-label="close">✕</button>
+      <h3 data-i18n="exportTitle">내보내기</h3>
+      <div class="export-row">
+        <button class="ghost-btn" id="dlFrontBtn" data-i18n="dlFront">앞면 JPG 저장</button>
+        <button class="ghost-btn" id="dlBackBtn"  data-i18n="dlBack">뒷면 JPG 저장</button>
+        <button class="ghost-btn" id="copyFrontBtn" data-i18n="copyFront">앞면 클립보드 복사</button>
+      </div>
+      <p class="muted small" id="exportMsg"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
