@@ -14,6 +14,7 @@
     qType: null,
     qTypeEtc: '',
     question: '',
+    author: '',
     selectedEmoji: null, // currently selected emoji DOM node
     emojiPack: 'face',
     deck: null, // cached fetched cards
@@ -21,6 +22,18 @@
 
   const CATEGORY_COLOR = {
     mind: '#FFD6E0', thought: '#D6E5FF', body: '#D6F5D6', relation: '#FFF4C2',
+  };
+  // 카드 배경 워터컬러용 진한 보색 — back 그라데이션의 2차 색
+  const CATEGORY_COLOR_2 = {
+    mind: '#FFA8BD', thought: '#A8C8FF', body: '#A8E0A8', relation: '#FFE38A',
+  };
+  // 카테고리 대표 이모지 (배지 + 캐릭터)
+  const CATEGORY_EMOJI = {
+    mind: '❤️', thought: '💭', body: '🏃', relation: '👥', etc: '⭐',
+  };
+  // 질문 유형 대표 이모지
+  const TYPE_EMOJI = {
+    empathy: '💗', imagine: '💫', exp: '🌱', dilemma: '⚖️', etc: '✨',
   };
 
   const EMOJI_PACKS = {
@@ -113,6 +126,9 @@
   });
   $('#typeEtcInput').addEventListener('input', e => { state.qTypeEtc = e.target.value.trim(); });
 
+  // 작성자
+  $('#authorInput').addEventListener('input', e => { state.author = e.target.value.trim(); });
+
   // ============ Generate ============
   $('#generateBtn').addEventListener('click', () => {
     const q = $('#questionInput').value.trim();
@@ -120,7 +136,8 @@
     if (!state.category) { showToast('카테고리를 선택해 주세요.'); return; }
     if (!state.qType)    { showToast('질문 유형을 선택해 주세요.'); return; }
     state.question = q;
-    renderCardFront(); renderCardLabels(); autosizeQuestion();
+    state.author = $('#authorInput').value.trim();
+    renderCardFront(); renderCardBack(); renderCardLabels(); autosizeQuestion();
     $('#step-input').hidden = true;
     $('#step-decorate').hidden = false;
   });
@@ -133,10 +150,20 @@
     if (state.category === 'etc') return state.etcColor;
     return CATEGORY_COLOR[state.category] || '#FFD6E0';
   }
+  function getCardColor2() {
+    if (state.category === 'etc') return state.etcColor;
+    return CATEGORY_COLOR_2[state.category] || '#FFA8BD';
+  }
   function getCategoryLabel() {
     const d = window.I18N[state.lang];
     if (state.category === 'etc') return state.categoryEtc || d.catEtc;
     return d['cat' + cap(state.category)] || '';
+  }
+  function getCategoryEmoji() {
+    return CATEGORY_EMOJI[state.category] || '⭐';
+  }
+  function getTypeEmoji() {
+    return TYPE_EMOJI[state.qType] || '✨';
   }
   function getTypeLabel() {
     const d = window.I18N[state.lang];
@@ -147,8 +174,24 @@
   const cap = s => s ? s[0].toUpperCase()+s.slice(1) : '';
 
   function renderCardFront() {
-    $('#cardFront').style.background = getCardColor();
+    const front = $('#cardFront');
+    front.style.background = getCardColor();
     $('#cardQuestion').textContent = state.question;
+    $('#cardCatEmoji').textContent = getCategoryEmoji();
+    $('#cardTypeEmoji').textContent = getTypeEmoji();
+    $('#cardCharacter').textContent = getCategoryEmoji();
+    const authorEl = $('#cardAuthor');
+    if (state.author) {
+      authorEl.textContent = '— ' + state.author;
+    } else {
+      authorEl.textContent = '';
+    }
+  }
+  function renderCardBack() {
+    const back = $('#cardBack');
+    back.style.setProperty('--bk-color',   getCardColor());
+    back.style.setProperty('--bk-color-2', getCardColor2());
+    $('#backDeco').textContent = getCategoryEmoji();
   }
   function renderCardLabels() {
     if ($('#cardCatLabel'))  $('#cardCatLabel').textContent  = getCategoryLabel();
@@ -164,7 +207,7 @@
     el.style.fontSize = size + 'px';
   }
 
-  // ============ Emoji picker (tabs + place + select + size/rotate) ============
+  // ============ Emoji picker ============
   const emojiList = $('#emojiList');
   function renderEmojiPack(pack) {
     emojiList.innerHTML = '';
@@ -279,6 +322,7 @@
       typeLabel: getTypeLabel(),
       question: state.question,
       color: getCardColor(),
+      author: state.author || '',
     };
     if (!SHEETS_WEBAPP_URL) {
       console.log('[share payload]', payload);
@@ -292,10 +336,6 @@
     } catch (err) { console.error(err); showToast(t('toastShareFail')); }
   });
 
-  // Apps Script POST helper
-  // - Content-Type: text/plain → CORS 단순 요청 (프리플라이트 없음)
-  // - Apps Script가 302 redirect를 보낼 수 있으므로 redirect: 'follow' 명시
-  // - 응답이 JSON이 아닐 경우를 대비해 텍스트로 먼저 받은 뒤 파싱
   async function postToScript(body) {
     if (!SHEETS_WEBAPP_URL) throw new Error('SHEETS_WEBAPP_URL not configured');
     const res = await fetch(SHEETS_WEBAPP_URL, {
@@ -308,7 +348,6 @@
     try {
       return JSON.parse(text);
     } catch {
-      // Apps Script가 HTML 오류 페이지를 반환한 경우
       console.error('Apps Script non-JSON response:', text.slice(0, 200));
       throw new Error(`Apps Script returned non-JSON (HTTP ${res.status})`);
     }
@@ -346,8 +385,16 @@
     }
   });
 
+  // ============ Max card modal ============
+  function showMaxCardModal(max) {
+    const tpl = t('maxCardMsg');
+    $('#maxCardMsg').textContent = tpl.replace(/\{n\}/g, max);
+    $('#maxCardModal').hidden = false;
+  }
+  $('#maxCardClose').addEventListener('click', () => { $('#maxCardModal').hidden = true; });
+  $('#maxCardOk').addEventListener('click',   () => { $('#maxCardModal').hidden = true; });
+
   // ============ Card Explorer ============
-  // 다중 선택 칩 (전체 = 다른 선택 모두 해제)
   function bindMultiChips(container) {
     container.addEventListener('click', e => {
       const chip = e.target.closest('.chip'); if (!chip) return;
@@ -358,12 +405,10 @@
       } else {
         container.querySelector('.chip[data-value="all"]').classList.remove('active');
         chip.classList.toggle('active');
-        // 아무것도 선택 안되면 다시 전체로
         const any = [...container.querySelectorAll('.chip.active')].length > 0;
         if (!any) container.querySelector('.chip[data-value="all"]').classList.add('active');
       }
     });
-    // 기본: 전체
     container.querySelector('.chip[data-value="all"]').classList.add('active');
   }
   bindMultiChips($('#expCategoryChips'));
@@ -384,7 +429,7 @@
     }
     try {
       const res = await fetch(SHEETS_WEBAPP_URL + '?action=list');
-      const data = await res.json(); // [{category,type,question,color,...}]
+      const data = await res.json();
       state.deck = Array.isArray(data) ? data : (data.items || []);
       return state.deck;
     } catch (e) {
@@ -414,28 +459,6 @@
     return a;
   }
 
-  // 부족할 때 중복 채우되, 인접 자리에 동일 질문이 오지 않게 배치
-  function pickWithNonAdjacentDup(pool, n) {
-    if (pool.length === 0) return [];
-    if (pool.length >= n) return shuffle(pool).slice(0, n);
-
-    // pool < n: 사용 횟수 기반 그리디 픽 (라운드로빈 + 무작위)
-    const result = [];
-    const used = new Map(pool.map((_, i) => [i, 0]));
-    // 각 카드 등장 횟수가 균형 잡히도록
-    for (let k = 0; k < n; k++) {
-      const minCount = Math.min(...used.values());
-      const candidates = [...used.keys()].filter(i => used.get(i) === minCount && pool[i].question !== (result[result.length-1] && result[result.length-1].question));
-      const pickFrom = candidates.length ? candidates :
-                       [...used.keys()].filter(i => pool[i].question !== (result[result.length-1] && result[result.length-1].question));
-      const finalPool = pickFrom.length ? pickFrom : [...used.keys()];
-      const idx = finalPool[Math.floor(Math.random() * finalPool.length)];
-      result.push(pool[idx]);
-      used.set(idx, used.get(idx) + 1);
-    }
-    return result;
-  }
-
   $('#drawBtn').addEventListener('click', async () => {
     const grid = $('#drawGrid');
     grid.innerHTML = `<div class="empty-state">${t('loading')}</div>`;
@@ -451,8 +474,15 @@
       $('#flipAllBtn').hidden = true;
       return;
     }
-    const n = Math.max(1, Math.min(30, parseInt($('#drawCount').value, 10) || 1));
-    const picked = pickWithNonAdjacentDup(pool, n);
+    const requested = Math.max(1, Math.min(30, parseInt($('#drawCount').value, 10) || 1));
+    // 풀이 부족하면 팝업으로 안내 + 가능한 만큼만 뽑기 (중복 없이)
+    let n = requested;
+    if (requested > pool.length) {
+      n = pool.length;
+      showMaxCardModal(pool.length);
+      $('#drawCount').value = n;
+    }
+    const picked = shuffle(pool).slice(0, n);
     grid.innerHTML = '';
     picked.forEach(card => grid.appendChild(buildDrawCard(card)));
     $('#flipAllBtn').hidden = false;
@@ -467,25 +497,46 @@
     const map = { empathy:'typeEmpathy', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
     return d[map[value]] || value || '';
   }
+  function catEmojiFor(value) { return CATEGORY_EMOJI[value] || '⭐'; }
+  function typeEmojiFor(value){ return TYPE_EMOJI[value] || '✨'; }
+  function catColor2For(value){ return CATEGORY_COLOR_2[value] || '#FFA8BD'; }
 
   function buildDrawCard(card) {
     const wrap = document.createElement('div');
     wrap.className = 'draw-card';
-    const color = card.color || CATEGORY_COLOR[card.category] || '#FFD6E0';
+    const color  = card.color || CATEGORY_COLOR[card.category] || '#FFD6E0';
+    const color2 = catColor2For(card.category);
+    const catLabel  = card.categoryLabel || categoryLabelFor(card.category);
+    const typeLabel = card.typeLabel || typeLabelFor(card.type);
+    const catEm  = catEmojiFor(card.category);
+    const typeEm = typeEmojiFor(card.type);
+    const author = card.author ? `— ${escapeHtml(card.author)}` : '';
     wrap.innerHTML = `
       <div class="flipper">
-        <div class="face back">
-          <div class="b-title">${t('backTitle')}</div>
-          <div class="b-sent">
-            <span>${t('backSentence1')}</span>
-            <span class="blank">(&nbsp;&nbsp;&nbsp;&nbsp;)</span>
-            <span>${t('backSentence2')}</span>
+        <div class="face back" style="--bk-color:${color};--bk-color-2:${color2}">
+          <div class="b-mark">?</div>
+          <div class="b-title">${escapeHtml(t('backExplorerTitle'))}</div>
+          <div class="b-tagline">
+            ${escapeHtml(t('backTaglineLine1'))}<br>
+            ${escapeHtml(t('backTaglineLine2'))}<br>
+            ${escapeHtml(t('backTaglineLine3'))}
           </div>
+          <div class="b-deco">${catEm}</div>
         </div>
         <div class="face front" style="background:${color}">
-          <div class="d-cat">${card.categoryLabel || categoryLabelFor(card.category)}</div>
-          <div class="d-type">${card.typeLabel || typeLabelFor(card.type)}</div>
-          <div class="d-q">${escapeHtml(card.question)}</div>
+          <div class="d-top">
+            <div class="d-cat"><span>${catEm}</span><span>${escapeHtml(catLabel)}</span></div>
+            <div class="d-type"><span>${typeEm}</span><span>${escapeHtml(typeLabel)}</span></div>
+          </div>
+          <div class="d-body">
+            <span class="d-quote-l">"</span>
+            <div class="d-q">${escapeHtml(card.question)}</div>
+            <span class="d-quote-r">"</span>
+          </div>
+          <div class="d-bottom">
+            <span class="d-char">${catEm}</span>
+            <span class="d-author">${author}</span>
+          </div>
         </div>
       </div>`;
     wrap.addEventListener('click', () => wrap.classList.toggle('flipped'));
@@ -493,7 +544,7 @@
   }
 
   function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   $('#flipAllBtn').addEventListener('click', () => {
@@ -503,15 +554,13 @@
   });
 
   // ============ Admin Mode ============
-  // 비밀번호는 메모리에만 보관 (페이지 닫으면 사라짐)
   let adminPw = null;
   let adminItems = [];
-  let adminView = 'list'; // 'list' | 'card'
+  let adminView = 'list';
 
   const CAT_OPTIONS  = ['mind','thought','body','relation','etc'];
   const TYPE_OPTIONS = ['empathy','imagine','exp','dilemma','etc'];
 
-  // 숨겨진 입구
   $('#adminGate').addEventListener('click', () => {
     $('#adminLockModal').hidden = false;
     $('#adminPwInput').value = '';
@@ -566,7 +615,6 @@
     try {
       const r = await postToScript({ action: 'admin-list', password: adminPw });
       if (!r.ok) {
-        // 인증 실패 → 로그아웃 처리
         adminPw = null;
         $('#adminPanel').hidden = true;
         showToast(t('adminWrong'));
@@ -577,7 +625,6 @@
       renderAdmin();
     } catch (e) {
       console.error('[admin-list error]', e);
-      // 오류 원인을 화면에 표시 (URL 미설정 / 네트워크 오류 / 재배포 필요 등)
       const isUrlError = e.message.includes('not configured');
       content.innerHTML = `
         <div class="admin-error-box">
@@ -602,7 +649,7 @@
     return adminItems.filter(it => {
       if (cat && it.category !== cat) return false;
       if (q) {
-        const hay = [it.question, it.categoryLabel, it.typeLabel].join(' ').toLowerCase();
+        const hay = [it.question, it.categoryLabel, it.typeLabel, it.author].join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -627,7 +674,7 @@
     table.innerHTML = `
       <thead><tr>
         <th>ID</th><th>Lang</th><th>Category</th><th>Label</th>
-        <th>Type</th><th>Label</th><th>Question</th><th>Color</th><th></th>
+        <th>Type</th><th>Label</th><th>Question</th><th>Author</th><th>Color</th><th></th>
       </tr></thead>
       <tbody></tbody>`;
     const tbody = table.querySelector('tbody');
@@ -647,6 +694,7 @@
       <td>${selectHtml('type', it.type, TYPE_OPTIONS)}</td>
       <td><input data-k="typeLabel" value="${escapeAttr(it.typeLabel || '')}" /></td>
       <td><textarea data-k="question" rows="2">${escapeHtml(it.question || '')}</textarea></td>
+      <td><input data-k="author" value="${escapeAttr(it.author || '')}" /></td>
       <td>
         <span class="color-dot" style="background:${escapeAttr(it.color || '#fff')}"></span>
         <input data-k="color" value="${escapeAttr(it.color || '')}" style="width:88px" />
@@ -687,7 +735,6 @@
       if (!r.ok) throw new Error(r.error || 'fail');
       Object.assign(original, fields);
       scope.classList.remove('dirty');
-      // 색상 점 갱신
       const dot = scope.querySelector('.color-dot');
       if (dot) dot.style.background = fields.color || '#fff';
       state.deck = null;
@@ -736,6 +783,9 @@
       <div class="ac-row">
         ${selectHtml('type', it.type, TYPE_OPTIONS)}
         <input type="text" data-k="typeLabel" value="${escapeAttr(it.typeLabel || '')}" placeholder="라벨" />
+      </div>
+      <div class="ac-row">
+        <input type="text" data-k="author" value="${escapeAttr(it.author || '')}" placeholder="작성자" style="flex:1;min-width:120px" />
       </div>
       <div class="ac-row">
         ${selectHtml('lang', it.lang, ['ko','en','ja'])}

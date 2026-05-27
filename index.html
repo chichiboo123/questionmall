@@ -96,7 +96,15 @@
                     placeholder="여기에 질문을 적어보세요 :)"></textarea>
         </div>
 
-        <button class="primary-btn" id="generateBtn" data-i18n="generate">생성하기</button>
+        <div class="form-row">
+          <label for="authorInput" data-i18n="author">만든 사람</label>
+          <input type="text" id="authorInput" maxlength="20"
+                 data-i18n-placeholder="authorPh" placeholder="이름 (선택)" />
+        </div>
+
+        <div class="center-row">
+          <button class="primary-btn" id="generateBtn" data-i18n="generate">생성하기</button>
+        </div>
       </div>
 
       <!-- STEP 2: 카드 꾸미기 -->
@@ -108,9 +116,25 @@
           <div class="card-wrap">
             <div class="card-label" data-i18n="cardFront">앞면</div>
             <div class="card card-front" id="cardFront">
-              <div class="card-cat" id="cardCatLabel">마음</div>
-              <div class="card-type" id="cardTypeLabel">공감질문</div>
-              <div class="card-question" id="cardQuestion"></div>
+              <div class="card-top">
+                <div class="card-cat-badge">
+                  <span class="card-cat-emoji" id="cardCatEmoji">❤️</span>
+                  <span class="card-cat" id="cardCatLabel">마음</span>
+                </div>
+                <div class="card-type-badge">
+                  <span class="card-type-emoji" id="cardTypeEmoji">💗</span>
+                  <span class="card-type" id="cardTypeLabel">공감질문</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <span class="quote-mark quote-open">"</span>
+                <div class="card-question" id="cardQuestion"></div>
+                <span class="quote-mark quote-close">"</span>
+              </div>
+              <div class="card-bottom">
+                <span class="card-character" id="cardCharacter">💗</span>
+                <span class="card-author" id="cardAuthor"></span>
+              </div>
               <div class="emoji-layer" id="emojiLayer"></div>
             </div>
           </div>
@@ -119,12 +143,14 @@
           <div class="card-wrap">
             <div class="card-label" data-i18n="cardBack">뒷면</div>
             <div class="card card-back" id="cardBack">
-              <div class="back-title" data-i18n="backTitle">질문카드</div>
-              <div class="back-sentence">
-                <span data-i18n="backSentence1">질문은</span>
-                <span class="blank">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</span>
-                <span data-i18n="backSentence2">문이다</span>
+              <div class="back-mark">?</div>
+              <div class="back-title" data-i18n="backExplorerTitle">질문탐험대</div>
+              <div class="back-tagline">
+                <span data-i18n="backTaglineLine1">좋은 질문은</span><br>
+                <span data-i18n="backTaglineLine2">생각을 넘기고,</span><br>
+                <span data-i18n="backTaglineLine3">마음을 연결해요!</span>
               </div>
+              <div class="back-deco" id="backDeco">💗</div>
             </div>
           </div>
         </div>
@@ -237,6 +263,18 @@
     </div>
   </div>
 
+  <!-- 최대 카드 수 안내 모달 -->
+  <div class="modal" id="maxCardModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="maxCardClose" aria-label="close">✕</button>
+      <h3 data-i18n="maxCardTitle">카드가 부족해요!</h3>
+      <p id="maxCardMsg" data-i18n="maxCardMsg">선택한 조건에서 만들 수 있는 카드 수가 부족해요.</p>
+      <div class="center-row">
+        <button class="primary-btn" id="maxCardOk" data-i18n="maxCardOk">확인</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 숨겨진 관리자 입구 (우측 하단) -->
   <button class="admin-gate" id="adminGate" aria-label="admin" title=""></button>
 
@@ -246,12 +284,12 @@
       <button class="modal-close" id="adminLockClose" aria-label="close">✕</button>
       <h3 data-i18n="adminTitle">관리자 모드</h3>
       <p class="muted small" data-i18n="adminDesc">비밀번호를 입력해 주세요.</p>
-      <input type="password" id="adminPwInput" class="etc-input" style="width:100%"
+      <input type="password" id="adminPwInput" class="etc-input" style="width:100%;max-width:none;margin-top:0"
              data-i18n-placeholder="adminPwPh" placeholder="비밀번호" autocomplete="off" />
-      <div class="action-row" style="margin-top:12px">
+      <div class="action-row" style="margin-top:16px">
         <button class="primary-btn" id="adminLoginBtn" data-i18n="adminEnter">입장</button>
       </div>
-      <p class="muted small" id="adminLoginMsg"></p>
+      <p class="muted small" id="adminLoginMsg" style="text-align:center;margin-top:10px"></p>
     </div>
   </div>
 
