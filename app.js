@@ -44,6 +44,7 @@
 
   const $  = sel => document.querySelector(sel);
   const $$ = sel => document.querySelectorAll(sel);
+  const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 
   // ============ i18n ============
   function t(k){ return window.I18N[state.lang][k] || k; }
@@ -318,12 +319,37 @@
     syncEmojiPickerSelection();
     saveLocal();
   });
+  $('#applyCustomEmojiBtn').addEventListener('click', () => {
+    const input = $('#customEmojiInput');
+    const em = normalizeEmojiInput(input.value);
+    if (!em) {
+      showToast('이모지를 입력해 주세요.');
+      return;
+    }
+    setCardEmoji(em);
+    input.value = '';
+  });
+  $('#customEmojiInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      $('#applyCustomEmojiBtn').click();
+    }
+  });
 
   function setCardEmoji(em) {
     state.selectedEmoji = em;
     $('#cardCharacter').textContent = em;
     syncEmojiPickerSelection();
     saveLocal();
+  }
+  function normalizeEmojiInput(raw) {
+    const trimmed = String(raw || '').trim();
+    if (!trimmed) return '';
+    const segments = typeof Intl !== 'undefined' && Intl.Segmenter
+      ? [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(trimmed)].map(s => s.segment)
+      : [...trimmed];
+    const firstEmoji = segments.find(seg => EMOJI_REGEX.test(seg));
+    return firstEmoji || '';
   }
   function syncEmojiPickerSelection() {
     emojiList.querySelectorAll('button').forEach(b => {
@@ -396,7 +422,19 @@
   $('#exportClose').addEventListener('click', () => { $('#exportModal').hidden = true; });
 
   async function cardToCanvas(el) {
-    return await html2canvas(el, { backgroundColor: null, scale: 2, useCORS: true });
+    const clone = el.cloneNode(true);
+    clone.style.borderRadius = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.margin = '0';
+    clone.style.position = 'fixed';
+    clone.style.left = '-99999px';
+    clone.style.top = '0';
+    document.body.appendChild(clone);
+    try {
+      return await html2canvas(clone, { backgroundColor: null, scale: 2, useCORS: true });
+    } finally {
+      clone.remove();
+    }
   }
   function downloadCanvas(c, name) {
     const a = document.createElement('a');
