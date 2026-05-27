@@ -3,7 +3,7 @@
 
   // ============ Config ============
   // 구글 Apps Script Web App URL. POST=저장, GET=목록 조회
-  const SHEETS_WEBAPP_URL = '';
+  const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx_4o3UiJRXAwhOCeG3U7RNLkIEjfb3JXfA1vm0ec1GU7K_QcggXiXLApo8Viws8Uu8/exec';
 
   // ============ State ============
   const state = {

@@ -13,6 +13,9 @@
   --card-h: 352px;          /* = 88 * 4 */
 }
 
+/* hidden 속성이 어떤 CSS display 값에도 눌리지 않도록 보장 */
+[hidden] { display: none !important; }
+
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
 
 body {
