@@ -540,10 +540,11 @@ h2 {
   overflow: hidden;
 }
 
+/* position을 여기서 relative로 덮어쓰지 않는다 — .face의 absolute가 깨지면
+   양 면이 흐름에 따라 쌓여 카드가 반쪽 높이로 보인다 (lotto와 동일한 버그) */
 .draw-card .face.back {
   background: #fff;
   align-items: center; justify-content: center; text-align: center;
-  position: relative;
 }
 .draw-card .face.back::before {
   content: '';
@@ -573,7 +574,6 @@ h2 {
 .draw-card .face.front {
   transform: rotateY(180deg);
   background: var(--pink);
-  position: relative;
 }
 .draw-card .face.front::before {
   content: '';
