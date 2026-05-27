@@ -41,9 +41,18 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="maker"    data-i18n="tabMaker">질문 제작소</button>
-    <button class="tab"        data-tab="explorer" data-i18n="tabExplorer">질문 탐험대</button>
-    <button class="tab"        data-tab="lotto"    data-i18n="tabLotto">질문 로또</button>
+    <button class="tab active" data-tab="maker">
+      <span class="tab-emoji" aria-hidden="true">🛠️</span>
+      <span class="tab-label" data-i18n="tabMaker">질문 제작소</span>
+    </button>
+    <button class="tab" data-tab="explorer">
+      <span class="tab-emoji" aria-hidden="true">🧭</span>
+      <span class="tab-label" data-i18n="tabExplorer">질문 탐험대</span>
+    </button>
+    <button class="tab" data-tab="lotto">
+      <span class="tab-emoji" aria-hidden="true">🎰</span>
+      <span class="tab-label" data-i18n="tabLotto">질문 로또</span>
+    </button>
   </nav>
 
   <main class="app-main">
@@ -66,11 +75,11 @@
         <div class="form-row">
           <label data-i18n="category">카테고리</label>
           <div class="chip-group" id="categoryChips">
-            <button class="chip cat-mind"     data-value="mind"        data-i18n="catMind">마음</button>
-            <button class="chip cat-thought"  data-value="thought"     data-i18n="catThought">생각</button>
-            <button class="chip cat-body"     data-value="body"        data-i18n="catBody">몸</button>
-            <button class="chip cat-relation" data-value="relation"    data-i18n="catRelation">관계</button>
-            <button class="chip cat-etc"      data-value="etc"         data-i18n="catEtc">기타</button>
+            <button class="chip cat-mind"     data-value="mind"><span class="chip-emoji" aria-hidden="true">❤️</span><span data-i18n="catMind">마음</span></button>
+            <button class="chip cat-thought"  data-value="thought"><span class="chip-emoji" aria-hidden="true">💭</span><span data-i18n="catThought">생각</span></button>
+            <button class="chip cat-body"     data-value="body"><span class="chip-emoji" aria-hidden="true">🏃</span><span data-i18n="catBody">몸</span></button>
+            <button class="chip cat-relation" data-value="relation"><span class="chip-emoji" aria-hidden="true">👥</span><span data-i18n="catRelation">관계</span></button>
+            <button class="chip cat-etc"      data-value="etc"><span class="chip-emoji" aria-hidden="true">⭐</span><span data-i18n="catEtc">기타</span></button>
           </div>
           <input type="text" id="categoryEtcInput" class="etc-input" hidden
                  autocomplete="off"
@@ -91,11 +100,11 @@
         <div class="form-row">
           <label data-i18n="qType">질문 유형</label>
           <div class="chip-group" id="typeChips">
-            <button class="chip" data-value="choice"  data-i18n="typeChoice">선택질문</button>
-            <button class="chip" data-value="imagine"  data-i18n="typeImagine">상상질문</button>
-            <button class="chip" data-value="exp"      data-i18n="typeExp">경험질문</button>
-            <button class="chip" data-value="dilemma"  data-i18n="typeDilemma">딜레마질문</button>
-            <button class="chip" data-value="etc"      data-i18n="typeEtc">기타</button>
+            <button class="chip type-choice"  data-value="choice"><span class="chip-emoji" aria-hidden="true">🔀</span><span data-i18n="typeChoice">선택질문</span></button>
+            <button class="chip type-imagine" data-value="imagine"><span class="chip-emoji" aria-hidden="true">✨</span><span data-i18n="typeImagine">상상질문</span></button>
+            <button class="chip type-exp"     data-value="exp"><span class="chip-emoji" aria-hidden="true">🌱</span><span data-i18n="typeExp">경험질문</span></button>
+            <button class="chip type-dilemma" data-value="dilemma"><span class="chip-emoji" aria-hidden="true">⚖️</span><span data-i18n="typeDilemma">딜레마질문</span></button>
+            <button class="chip type-etc"     data-value="etc"><span class="chip-emoji" aria-hidden="true">🎲</span><span data-i18n="typeEtc">기타</span></button>
           </div>
           <input type="text" id="typeEtcInput" class="etc-input" hidden
                  autocomplete="off"
@@ -202,24 +211,24 @@
       <div class="form-row">
         <label data-i18n="filterCategory">카테고리 (여러 개 선택 가능)</label>
         <div class="chip-group" id="expCategoryChips">
-          <button class="chip cat-mind"     data-value="mind"     data-i18n="catMind">마음</button>
-          <button class="chip cat-thought"  data-value="thought"  data-i18n="catThought">생각</button>
-          <button class="chip cat-body"     data-value="body"     data-i18n="catBody">몸</button>
-          <button class="chip cat-relation" data-value="relation" data-i18n="catRelation">관계</button>
-          <button class="chip cat-etc"      data-value="etc"      data-i18n="catEtc">기타</button>
-          <button class="chip"              data-value="all"      data-i18n="all">전체</button>
+          <button class="chip cat-mind"     data-value="mind"><span class="chip-emoji" aria-hidden="true">❤️</span><span data-i18n="catMind">마음</span></button>
+          <button class="chip cat-thought"  data-value="thought"><span class="chip-emoji" aria-hidden="true">💭</span><span data-i18n="catThought">생각</span></button>
+          <button class="chip cat-body"     data-value="body"><span class="chip-emoji" aria-hidden="true">🏃</span><span data-i18n="catBody">몸</span></button>
+          <button class="chip cat-relation" data-value="relation"><span class="chip-emoji" aria-hidden="true">👥</span><span data-i18n="catRelation">관계</span></button>
+          <button class="chip cat-etc"      data-value="etc"><span class="chip-emoji" aria-hidden="true">⭐</span><span data-i18n="catEtc">기타</span></button>
+          <button class="chip chip-all"     data-value="all"><span class="chip-emoji" aria-hidden="true">🌈</span><span data-i18n="all">전체</span></button>
         </div>
       </div>
 
       <div class="form-row">
         <label data-i18n="filterType">질문 유형 (여러 개 선택 가능)</label>
         <div class="chip-group" id="expTypeChips">
-          <button class="chip" data-value="choice" data-i18n="typeChoice">선택질문</button>
-          <button class="chip" data-value="imagine" data-i18n="typeImagine">상상질문</button>
-          <button class="chip" data-value="exp"     data-i18n="typeExp">경험질문</button>
-          <button class="chip" data-value="dilemma" data-i18n="typeDilemma">딜레마질문</button>
-          <button class="chip" data-value="etc"     data-i18n="typeEtc">기타</button>
-          <button class="chip" data-value="all"     data-i18n="all">전체</button>
+          <button class="chip type-choice"  data-value="choice"><span class="chip-emoji" aria-hidden="true">🔀</span><span data-i18n="typeChoice">선택질문</span></button>
+          <button class="chip type-imagine" data-value="imagine"><span class="chip-emoji" aria-hidden="true">✨</span><span data-i18n="typeImagine">상상질문</span></button>
+          <button class="chip type-exp"     data-value="exp"><span class="chip-emoji" aria-hidden="true">🌱</span><span data-i18n="typeExp">경험질문</span></button>
+          <button class="chip type-dilemma" data-value="dilemma"><span class="chip-emoji" aria-hidden="true">⚖️</span><span data-i18n="typeDilemma">딜레마질문</span></button>
+          <button class="chip type-etc"     data-value="etc"><span class="chip-emoji" aria-hidden="true">🎲</span><span data-i18n="typeEtc">기타</span></button>
+          <button class="chip chip-all"     data-value="all"><span class="chip-emoji" aria-hidden="true">🌈</span><span data-i18n="all">전체</span></button>
         </div>
       </div>
 
@@ -330,28 +339,62 @@
   <!-- 관리자 대시보드 -->
   <div class="admin-overlay" id="adminPanel" hidden>
     <header class="admin-header">
-      <h2 data-i18n="adminTitle">관리자 모드</h2>
+      <div class="admin-title-row">
+        <h2><span aria-hidden="true">🔧</span> <span data-i18n="adminTitle">관리자 모드</span></h2>
+        <div class="admin-header-actions">
+          <button class="ghost-btn" id="adminReloadBtn" data-i18n="reload">새로고침</button>
+          <button class="ghost-btn" id="adminLogoutBtn" data-i18n="logout">로그아웃</button>
+        </div>
+      </div>
       <div class="admin-tools">
-        <div class="view-toggle">
+        <div class="view-toggle" role="tablist" aria-label="view mode">
           <button class="vt active" data-view="list" data-i18n="viewList">리스트</button>
           <button class="vt" data-view="card" data-i18n="viewCard">카드</button>
         </div>
-        <input type="search" id="adminSearch" data-i18n-placeholder="searchPh" placeholder="검색" />
+        <div class="admin-search-wrap">
+          <span class="admin-search-icon" aria-hidden="true">🔍</span>
+          <input type="search" id="adminSearch" data-i18n-placeholder="searchPh" placeholder="검색" />
+        </div>
         <select id="adminFilterCat">
           <option value="" data-i18n="allCat">전체 카테고리</option>
-          <option value="mind">마음</option>
-          <option value="thought">생각</option>
-          <option value="body">몸</option>
-          <option value="relation">관계</option>
-          <option value="etc">기타</option>
+          <option value="mind" data-i18n="catMind">마음</option>
+          <option value="thought" data-i18n="catThought">생각</option>
+          <option value="body" data-i18n="catBody">몸</option>
+          <option value="relation" data-i18n="catRelation">관계</option>
+          <option value="etc" data-i18n="catEtc">기타</option>
+        </select>
+        <select id="adminFilterType">
+          <option value="" data-i18n="allType">전체 유형</option>
+          <option value="choice" data-i18n="typeChoice">선택질문</option>
+          <option value="imagine" data-i18n="typeImagine">상상질문</option>
+          <option value="exp" data-i18n="typeExp">경험질문</option>
+          <option value="dilemma" data-i18n="typeDilemma">딜레마질문</option>
+          <option value="etc" data-i18n="typeEtc">기타</option>
+        </select>
+        <select id="adminSort">
+          <option value="newest" data-i18n="sortNewest">최신순</option>
+          <option value="oldest" data-i18n="sortOldest">오래된순</option>
+          <option value="category" data-i18n="sortCategory">카테고리순</option>
         </select>
         <button class="primary-btn small-btn" id="adminAddBtn" data-i18n="adminAdd">+ 새 카드</button>
-        <button class="ghost-btn" id="adminReloadBtn" data-i18n="reload">새로고침</button>
-        <button class="ghost-btn" id="adminLogoutBtn" data-i18n="logout">로그아웃</button>
       </div>
     </header>
     <div class="admin-stats" id="adminStats"></div>
     <div class="admin-content" id="adminContent"></div>
+  </div>
+
+  <!-- 관리자 — 삭제 확인 모달 -->
+  <div class="modal" id="adminDeleteModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="adminDeleteClose" aria-label="close">✕</button>
+      <h3 data-i18n="confirmDeleteTitle">정말 삭제할까요?</h3>
+      <p class="muted small" data-i18n="confirmDeleteDesc">삭제한 카드는 되돌릴 수 없어요.</p>
+      <div class="admin-delete-preview" id="adminDeletePreview"></div>
+      <div class="action-row" style="margin-top:14px">
+        <button class="ghost-btn" id="adminDeleteCancel" data-i18n="cancel">취소</button>
+        <button class="danger-btn danger-btn-lg" id="adminDeleteOk" data-i18n="deleteBtn">삭제</button>
+      </div>
+    </div>
   </div>
 
   <!-- 관리자 — 새 카드 추가 모달 -->
