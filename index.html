@@ -127,10 +127,29 @@
         </div>
 
         <div class="emoji-picker">
-          <span data-i18n="addEmoji">이모지 추가</span>
-          <div class="emoji-list" id="emojiList">
-            <!-- populated by JS -->
+          <div class="emoji-tabs" id="emojiTabs">
+            <button class="emoji-tab active" data-pack="face"   data-i18n="emojiFace">표정</button>
+            <button class="emoji-tab" data-pack="hand"   data-i18n="emojiHand">손짓</button>
+            <button class="emoji-tab" data-pack="nature" data-i18n="emojiNature">자연</button>
+            <button class="emoji-tab" data-pack="food"   data-i18n="emojiFood">음식</button>
+            <button class="emoji-tab" data-pack="animal" data-i18n="emojiAnimal">동물</button>
+            <button class="emoji-tab" data-pack="symbol" data-i18n="emojiSymbol">기호</button>
           </div>
+          <div class="emoji-list" id="emojiList"></div>
+
+          <div class="emoji-controls" id="emojiControls" hidden>
+            <span class="small muted" data-i18n="selected">선택됨</span>
+            <label class="ctrl">
+              <span data-i18n="size">크기</span>
+              <input type="range" id="sizeRange" min="16" max="80" step="2" value="28" />
+            </label>
+            <label class="ctrl">
+              <span data-i18n="rotate">회전</span>
+              <input type="range" id="rotRange" min="-180" max="180" step="5" value="0" />
+            </label>
+            <button class="ghost-btn small-btn" id="delEmojiBtn" data-i18n="del">삭제</button>
+          </div>
+
           <button class="ghost-btn" id="clearEmojiBtn" data-i18n="clearEmoji">모두 지우기</button>
         </div>
 
@@ -142,10 +161,42 @@
       </div>
     </section>
 
-    <!-- ============ 카드 탐험대 (스캐폴드) ============ -->
+    <!-- ============ 카드 탐험대 ============ -->
     <section class="view" id="view-explorer" hidden>
       <h2 data-i18n="explorerTitle">카드 탐험대</h2>
-      <p class="muted" data-i18n="explorerComing">곧 만나요! (다음 단계에서 구현)</p>
+
+      <div class="form-row">
+        <label data-i18n="filterCategory">카테고리 (여러 개 선택 가능)</label>
+        <div class="chip-group" id="expCategoryChips">
+          <button class="chip cat-mind"     data-value="mind"     data-i18n="catMind">마음</button>
+          <button class="chip cat-thought"  data-value="thought"  data-i18n="catThought">생각</button>
+          <button class="chip cat-body"     data-value="body"     data-i18n="catBody">몸</button>
+          <button class="chip cat-relation" data-value="relation" data-i18n="catRelation">관계</button>
+          <button class="chip cat-etc"      data-value="etc"      data-i18n="catEtc">기타</button>
+          <button class="chip"              data-value="all"      data-i18n="all">전체</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label data-i18n="filterType">질문 유형 (여러 개 선택 가능)</label>
+        <div class="chip-group" id="expTypeChips">
+          <button class="chip" data-value="empathy" data-i18n="typeEmpathy">공감질문</button>
+          <button class="chip" data-value="imagine" data-i18n="typeImagine">상상질문</button>
+          <button class="chip" data-value="exp"     data-i18n="typeExp">경험질문</button>
+          <button class="chip" data-value="dilemma" data-i18n="typeDilemma">딜레마질문</button>
+          <button class="chip" data-value="etc"     data-i18n="typeEtc">기타</button>
+          <button class="chip" data-value="all"     data-i18n="all">전체</button>
+        </div>
+      </div>
+
+      <div class="form-row inline">
+        <label for="drawCount" data-i18n="howMany">몇 장 뽑을까요?</label>
+        <input type="number" id="drawCount" min="1" max="30" value="6" />
+        <button class="primary-btn" id="drawBtn" data-i18n="draw">뽑기!</button>
+        <button class="ghost-btn" id="flipAllBtn" hidden data-i18n="flipAll">모두 뒤집기</button>
+      </div>
+
+      <div class="draw-grid" id="drawGrid"></div>
     </section>
   </main>
 
