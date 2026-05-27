@@ -292,14 +292,26 @@
     } catch (err) { console.error(err); showToast(t('toastShareFail')); }
   });
 
-  // Apps Script POST helper — text/plain은 단순 요청이라 CORS 프리플라이트 없음
+  // Apps Script POST helper
+  // - Content-Type: text/plain → CORS 단순 요청 (프리플라이트 없음)
+  // - Apps Script가 302 redirect를 보낼 수 있으므로 redirect: 'follow' 명시
+  // - 응답이 JSON이 아닐 경우를 대비해 텍스트로 먼저 받은 뒤 파싱
   async function postToScript(body) {
+    if (!SHEETS_WEBAPP_URL) throw new Error('SHEETS_WEBAPP_URL not configured');
     const res = await fetch(SHEETS_WEBAPP_URL, {
       method: 'POST',
+      redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body),
     });
-    return await res.json();
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      // Apps Script가 HTML 오류 페이지를 반환한 경우
+      console.error('Apps Script non-JSON response:', text.slice(0, 200));
+      throw new Error(`Apps Script returned non-JSON (HTTP ${res.status})`);
+    }
   }
 
   // ============ Export ============
@@ -549,21 +561,38 @@
 
   async function loadAdminData() {
     const content = $('#adminContent');
+    $('#adminStats').textContent = '';
     content.innerHTML = `<p class="muted">${t('loading')}</p>`;
     try {
       const r = await postToScript({ action: 'admin-list', password: adminPw });
       if (!r.ok) {
+        // 인증 실패 → 로그아웃 처리
         adminPw = null;
         $('#adminPanel').hidden = true;
         showToast(t('adminWrong'));
         return;
       }
       adminItems = r.items || [];
-      state.deck = null; // 탐험대 캐시도 무효화
+      state.deck = null;
       renderAdmin();
     } catch (e) {
-      console.error(e);
-      content.innerHTML = `<p class="muted">${t('saveFail')}</p>`;
+      console.error('[admin-list error]', e);
+      // 오류 원인을 화면에 표시 (URL 미설정 / 네트워크 오류 / 재배포 필요 등)
+      const isUrlError = e.message.includes('not configured');
+      content.innerHTML = `
+        <div class="admin-error-box">
+          <p class="admin-error-title">⚠️ 데이터를 불러올 수 없어요</p>
+          ${isUrlError
+            ? `<p>app.js의 <code>SHEETS_WEBAPP_URL</code>을 설정하지 않았어요.</p>`
+            : `<p>Apps Script 응답 오류입니다. 아래를 확인해 주세요:</p>
+               <ol>
+                 <li>Apps Script를 <b>최신 코드로 다시 배포</b>했는지 확인</li>
+                 <li>배포 설정: 실행 권한 = <b>나</b> / 액세스 = <b>모든 사용자</b></li>
+                 <li>Script Properties에 <code>ADMIN_PASSWORD</code> 설정 여부</li>
+               </ol>
+               <p class="muted small">오류: ${escapeHtml(e.message)}</p>`
+          }
+        </div>`;
     }
   }
 
