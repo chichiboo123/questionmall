@@ -24,6 +24,13 @@
 - '모두 뒤집기' 토글
 - DB 카드 수가 요청 수보다 적으면 **중복 허용**, 단 동일 질문이 **연속 자리에 오지 않게** 셔플
 
+### 관리자 모드
+- **숨겨진 입구**: 화면 우측 하단의 작은 회색 점을 클릭
+- **비밀번호 보호**: 비밀번호는 코드에 절대 포함되지 않으며, Apps Script의 **Script Properties (서버측 환경변수)** 에 보관
+- **대시보드**: **리스트뷰** (테이블, 셀 단위 인라인 편집) / **카드뷰** 토글
+- **기능**: 검색(질문/라벨), 카테고리 필터, 새로고침, 행 단위 수정·삭제
+- **세션**: 비밀번호는 메모리에만 남고 새로고침/로그아웃 시 사라짐
+
 ### 다국어
 - 한국어 / English / 日本語 (우측 상단 드롭다운)
 - `html[lang]` 기반 폰트 스택 — 한국어 Noto Sans KR, 일본어 Noto Sans JP, 영어 Noto Sans
@@ -93,6 +100,25 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 
 ---
 
+## 🔐 관리자 비밀번호 설정 (환경변수)
+
+비밀번호는 **Apps Script Script Properties**에 저장됩니다. 코드/리포지토리에는 절대 포함되지 않습니다.
+
+**방법 A — 메뉴 사용 (권장)**
+1. 스프레드시트 메뉴 **QuestionMall → 관리자 비밀번호 설정**
+2. 비밀번호 입력 → 저장
+
+**방법 B — 수동 설정**
+1. Apps Script 편집기 → 좌측 **⚙️ 프로젝트 설정**
+2. 하단 **스크립트 속성** → **속성 추가**
+3. 속성: `ADMIN_PASSWORD` / 값: 원하는 비밀번호 → 저장
+
+비밀번호를 변경하면 즉시 반영됩니다(재배포 불필요). 잊었다면 같은 방법으로 덮어쓰면 됩니다.
+
+> ⚠️ Apps Script Web App URL을 알면 누구나 `verify` 호출은 시도할 수 있으므로, 추측이 어려운 비밀번호를 사용하세요. 무작위 대입을 막으려면 Apps Script에 호출 빈도 제한을 추가하는 것을 권장합니다.
+
+---
+
 ## 📑 시트 컬럼 스펙 (`cards` 시트)
 
 | 열 | 키 | 설명 | 예시 |
@@ -126,6 +152,12 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 }
 ```
 프론트는 CORS 단순화를 위해 `mode: 'no-cors'`로 호출합니다. 응답을 읽지 않아도 저장은 정상 수행됩니다.
+
+### POST — 관리자 작업 (비밀번호 필요)
+- `{ "action": "verify",     "password": "..." }`
+- `{ "action": "admin-list", "password": "..." }` → `{ ok, items: [...] }`
+- `{ "action": "update",     "password": "...", "id": "...", "question": "..." }` (수정 가능 필드: `lang`, `category`, `categoryLabel`, `type`, `typeLabel`, `question`, `color`)
+- `{ "action": "delete",     "password": "...", "id": "..." }`
 
 ### GET — 목록 조회
 - `?action=list` — 전체 반환 (배열)

@@ -5,31 +5,29 @@
  *  1) 새 Google Sheets 만들기 → 확장 프로그램 → Apps Script
  *  2) 이 코드를 통째로 붙여넣기
  *  3) 메뉴 "QuestionMall → 시트 초기화" 실행 (헤더 자동 생성)
- *  4) 배포 → "웹 앱" → 액세스 권한: "모든 사용자"
- *  5) 생성된 Web App URL을 프론트엔드 `app.js`의 `SHEETS_WEBAPP_URL`에 붙여넣기
+ *  4) ⚠️ 프로젝트 설정 → "스크립트 속성"에서 ADMIN_PASSWORD 추가
+ *     (코드에 비밀번호를 하드코딩하지 않습니다)
+ *  5) 배포 → "웹 앱" → 액세스 권한: "모든 사용자"
+ *  6) 생성된 Web App URL을 프론트엔드 `app.js`의 `SHEETS_WEBAPP_URL`에 붙여넣기
  *
- * 지원 엔드포인트
- *  - POST  body=JSON       : 카드 1장 저장
- *  - GET   ?action=list    : 전체 카드 JSON 배열로 반환
- *  - GET   ?action=list&category=mind&type=empathy&limit=50 : 필터 조회
- *  - GET   ?action=count   : 저장된 카드 수
- *
- * 시트 구조 (sheet name: "cards")
- *  id | timestamp | lang | category | categoryLabel | type | typeLabel | question | color
+ * 엔드포인트
+ *  - GET   ?action=list[&category=&type=&limit=]  : 카드 목록 (공개)
+ *  - GET   ?action=count                          : 카드 수
+ *  - POST  {question, ...}                        : 카드 생성 (공개)
+ *  - POST  {action:'verify', password}            : 관리자 비밀번호 확인
+ *  - POST  {action:'admin-list', password}        : 관리자용 전체 조회
+ *  - POST  {action:'update', password, id, ...}   : 카드 수정
+ *  - POST  {action:'delete', password, id}        : 카드 삭제
  */
 
 const SHEET_NAME = 'cards';
 const HEADERS = [
-  'id',            // 자동 증가 (UUID 일부)
-  'timestamp',     // ISO8601
-  'lang',          // ko | en | ja
-  'category',      // mind | thought | body | relation | etc
-  'categoryLabel', // 표시용 라벨 (etc일 때 사용자 입력값)
-  'type',          // empathy | imagine | exp | dilemma | etc
-  'typeLabel',     // 표시용 라벨
-  'question',      // 본문
-  'color',         // 카드 배경 HEX
+  'id', 'timestamp', 'lang',
+  'category', 'categoryLabel',
+  'type', 'typeLabel',
+  'question', 'color',
 ];
+const EDITABLE = ['lang', 'category', 'categoryLabel', 'type', 'typeLabel', 'question', 'color'];
 
 /** ────────────── Menu (수동 초기화용) ────────────── */
 function onOpen() {
@@ -37,6 +35,7 @@ function onOpen() {
     .createMenu('QuestionMall')
     .addItem('시트 초기화 (헤더 생성)', 'initSheet')
     .addItem('샘플 데이터 추가', 'seedSamples')
+    .addItem('관리자 비밀번호 설정', 'promptSetAdminPassword')
     .addToUi();
 }
 
@@ -47,7 +46,6 @@ function initSheet() {
   sh.clear();
   sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
   sh.setFrozenRows(1);
-  // 가독성 위한 열 너비 조정
   const widths = [120, 170, 60, 90, 110, 90, 110, 360, 90];
   widths.forEach((w, i) => sh.setColumnWidth(i + 1, w));
   SpreadsheetApp.getActive().toast('시트 초기화 완료', 'QuestionMall');
@@ -66,49 +64,98 @@ function seedSamples() {
   });
 }
 
-/** ────────────── HTTP: POST (카드 저장) ────────────── */
+function promptSetAdminPassword() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('관리자 비밀번호 설정', '새 비밀번호를 입력하세요:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  const pw = r.getResponseText().trim();
+  if (!pw) { ui.alert('빈 비밀번호는 사용할 수 없어요.'); return; }
+  PropertiesService.getScriptProperties().setProperty('ADMIN_PASSWORD', pw);
+  ui.alert('관리자 비밀번호가 저장되었습니다.');
+}
+
+/** ────────────── Auth ────────────── */
+function isAuthed(pw) {
+  const real = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
+  return !!real && !!pw && String(pw) === String(real);
+}
+
+/** ────────────── HTTP: POST ────────────── */
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    if (!data.question) return json({ ok: false, error: 'question required' });
+    const action = data.action || 'create';
 
-    const sh = ensureSheet();
-    const row = [
-      uuid(),
-      data.timestamp || new Date().toISOString(),
-      data.lang || 'ko',
-      data.category || '',
-      data.categoryLabel || '',
-      data.type || '',
-      data.typeLabel || '',
-      String(data.question).slice(0, 500),
-      data.color || '',
-    ];
-    sh.appendRow(row);
-    return json({ ok: true, id: row[0] });
+    // 공개: 카드 생성
+    if (action === 'create') {
+      if (!data.question) return json({ ok: false, error: 'question required' });
+      const sh = ensureSheet();
+      const id = uuid();
+      sh.appendRow([
+        id,
+        data.timestamp || new Date().toISOString(),
+        data.lang || 'ko',
+        data.category || '',
+        data.categoryLabel || '',
+        data.type || '',
+        data.typeLabel || '',
+        String(data.question).slice(0, 500),
+        data.color || '',
+      ]);
+      return json({ ok: true, id });
+    }
+
+    // 관리자: 비밀번호 검증만
+    if (action === 'verify') {
+      return json({ ok: isAuthed(data.password) });
+    }
+
+    // 아래는 모두 관리자 인증 필요
+    if (!isAuthed(data.password)) return json({ ok: false, error: 'unauthorized' });
+
+    if (action === 'admin-list') {
+      return json({ ok: true, items: readAll() });
+    }
+
+    if (action === 'update') {
+      if (!data.id) return json({ ok: false, error: 'id required' });
+      const sh = ensureSheet();
+      const rowIdx = findRowById(sh, data.id);
+      if (rowIdx < 0) return json({ ok: false, error: 'not found' });
+      EDITABLE.forEach(key => {
+        if (key in data) {
+          const col = HEADERS.indexOf(key) + 1;
+          let val = data[key];
+          if (key === 'question') val = String(val).slice(0, 500);
+          sh.getRange(rowIdx, col).setValue(val);
+        }
+      });
+      return json({ ok: true });
+    }
+
+    if (action === 'delete') {
+      if (!data.id) return json({ ok: false, error: 'id required' });
+      const sh = ensureSheet();
+      const rowIdx = findRowById(sh, data.id);
+      if (rowIdx < 0) return json({ ok: false, error: 'not found' });
+      sh.deleteRow(rowIdx);
+      return json({ ok: true });
+    }
+
+    return json({ ok: false, error: 'unknown action' });
   } catch (err) {
     return json({ ok: false, error: String(err) });
   }
 }
 
-/** ────────────── HTTP: GET (목록 / 카운트) ────────────── */
+/** ────────────── HTTP: GET (공개 조회) ────────────── */
 function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || 'list';
-  const sh = ensureSheet();
-  const values = sh.getDataRange().getValues();
-  if (values.length <= 1) return json([]);
-
-  const [head, ...rows] = values;
-  const items = rows
-    .filter(r => r[0])
-    .map(r => Object.fromEntries(head.map((h, i) => [h, r[i]])));
-
-  if (action === 'count') return json({ count: items.length });
+  if (action === 'count') return json({ count: readAll().length });
 
   if (action === 'list') {
-    let out = items;
+    let out = readAll();
     const p = e.parameter || {};
-
     if (p.category) {
       const cats = p.category.split(',').map(s => s.trim()).filter(Boolean);
       out = out.filter(it => cats.includes(it.category));
@@ -119,15 +166,32 @@ function doGet(e) {
     }
     if (p.limit) {
       const n = parseInt(p.limit, 10);
-      if (n > 0) out = out.slice(-n); // 최신 N개
+      if (n > 0) out = out.slice(-n);
     }
     return json(out);
   }
-
   return json({ ok: false, error: 'unknown action' });
 }
 
 /** ────────────── Helpers ────────────── */
+function readAll() {
+  const sh = ensureSheet();
+  const values = sh.getDataRange().getValues();
+  if (values.length <= 1) return [];
+  const [head, ...rows] = values;
+  return rows
+    .filter(r => r[0])
+    .map(r => Object.fromEntries(head.map((h, i) => [h, r[i]])));
+}
+
+function findRowById(sh, id) {
+  const ids = sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 0), 1).getValues();
+  for (let i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(id)) return i + 2;
+  }
+  return -1;
+}
+
 function ensureSheet() {
   const ss = SpreadsheetApp.getActive();
   let sh = ss.getSheetByName(SHEET_NAME);

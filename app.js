@@ -286,15 +286,21 @@
       return;
     }
     try {
-      await fetch(SHEETS_WEBAPP_URL, {
-        method: 'POST', mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-      });
+      await postToScript({ action: 'create', ...payload });
       state.deck = null; // invalidate cache
       showToast(t('toastShared'));
     } catch (err) { console.error(err); showToast(t('toastShareFail')); }
   });
+
+  // Apps Script POST helper — text/plain은 단순 요청이라 CORS 프리플라이트 없음
+  async function postToScript(body) {
+    const res = await fetch(SHEETS_WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body),
+    });
+    return await res.json();
+  }
 
   // ============ Export ============
   $('#exportBtn').addEventListener('click', () => { $('#exportModal').hidden = false; });
@@ -483,6 +489,246 @@
     const anyClosed = [...cards].some(c => !c.classList.contains('flipped'));
     cards.forEach(c => c.classList.toggle('flipped', anyClosed));
   });
+
+  // ============ Admin Mode ============
+  // 비밀번호는 메모리에만 보관 (페이지 닫으면 사라짐)
+  let adminPw = null;
+  let adminItems = [];
+  let adminView = 'list'; // 'list' | 'card'
+
+  const CAT_OPTIONS  = ['mind','thought','body','relation','etc'];
+  const TYPE_OPTIONS = ['empathy','imagine','exp','dilemma','etc'];
+
+  // 숨겨진 입구
+  $('#adminGate').addEventListener('click', () => {
+    $('#adminLockModal').hidden = false;
+    $('#adminPwInput').value = '';
+    $('#adminLoginMsg').textContent = '';
+    setTimeout(() => $('#adminPwInput').focus(), 50);
+  });
+  $('#adminLockClose').addEventListener('click', () => { $('#adminLockModal').hidden = true; });
+  $('#adminPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#adminLoginBtn').click(); });
+
+  $('#adminLoginBtn').addEventListener('click', async () => {
+    const pw = $('#adminPwInput').value;
+    if (!pw) return;
+    if (!SHEETS_WEBAPP_URL) {
+      $('#adminLoginMsg').textContent = t('adminNoUrl');
+      return;
+    }
+    try {
+      const r = await postToScript({ action: 'verify', password: pw });
+      if (!r.ok) { $('#adminLoginMsg').textContent = t('adminWrong'); return; }
+      adminPw = pw;
+      $('#adminLockModal').hidden = true;
+      $('#adminPanel').hidden = false;
+      await loadAdminData();
+    } catch (e) {
+      console.error(e);
+      $('#adminLoginMsg').textContent = t('adminWrong');
+    }
+  });
+
+  $('#adminLogoutBtn').addEventListener('click', () => {
+    adminPw = null; adminItems = [];
+    $('#adminPanel').hidden = true;
+  });
+
+  $('#adminReloadBtn').addEventListener('click', loadAdminData);
+  $('#adminSearch').addEventListener('input', renderAdmin);
+  $('#adminFilterCat').addEventListener('change', renderAdmin);
+
+  $$('.view-toggle .vt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.view-toggle .vt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      adminView = btn.dataset.view;
+      renderAdmin();
+    });
+  });
+
+  async function loadAdminData() {
+    const content = $('#adminContent');
+    content.innerHTML = `<p class="muted">${t('loading')}</p>`;
+    try {
+      const r = await postToScript({ action: 'admin-list', password: adminPw });
+      if (!r.ok) {
+        adminPw = null;
+        $('#adminPanel').hidden = true;
+        showToast(t('adminWrong'));
+        return;
+      }
+      adminItems = r.items || [];
+      state.deck = null; // 탐험대 캐시도 무효화
+      renderAdmin();
+    } catch (e) {
+      console.error(e);
+      content.innerHTML = `<p class="muted">${t('saveFail')}</p>`;
+    }
+  }
+
+  function filteredAdminItems() {
+    const q = $('#adminSearch').value.trim().toLowerCase();
+    const cat = $('#adminFilterCat').value;
+    return adminItems.filter(it => {
+      if (cat && it.category !== cat) return false;
+      if (q) {
+        const hay = [it.question, it.categoryLabel, it.typeLabel].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderAdmin() {
+    const items = filteredAdminItems();
+    $('#adminStats').textContent = t('totalCount').replace('{n}', items.length);
+    const content = $('#adminContent');
+    if (items.length === 0) {
+      content.innerHTML = `<p class="muted">${t('emptyAdmin')}</p>`;
+      return;
+    }
+    if (adminView === 'list') renderAdminList(items, content);
+    else renderAdminCards(items, content);
+  }
+
+  function renderAdminList(items, container) {
+    const table = document.createElement('table');
+    table.className = 'admin-table';
+    table.innerHTML = `
+      <thead><tr>
+        <th>ID</th><th>Lang</th><th>Category</th><th>Label</th>
+        <th>Type</th><th>Label</th><th>Question</th><th>Color</th><th></th>
+      </tr></thead>
+      <tbody></tbody>`;
+    const tbody = table.querySelector('tbody');
+    items.forEach(it => tbody.appendChild(buildAdminRow(it)));
+    container.innerHTML = '';
+    container.appendChild(table);
+  }
+
+  function buildAdminRow(it) {
+    const tr = document.createElement('tr');
+    tr.dataset.id = it.id;
+    tr.innerHTML = `
+      <td><code>${escapeHtml(it.id)}</code><div class="muted small">${escapeHtml(formatTs(it.timestamp))}</div></td>
+      <td>${selectHtml('lang', it.lang, ['ko','en','ja'])}</td>
+      <td>${selectHtml('category', it.category, CAT_OPTIONS)}</td>
+      <td><input data-k="categoryLabel" value="${escapeAttr(it.categoryLabel || '')}" /></td>
+      <td>${selectHtml('type', it.type, TYPE_OPTIONS)}</td>
+      <td><input data-k="typeLabel" value="${escapeAttr(it.typeLabel || '')}" /></td>
+      <td><textarea data-k="question" rows="2">${escapeHtml(it.question || '')}</textarea></td>
+      <td>
+        <span class="color-dot" style="background:${escapeAttr(it.color || '#fff')}"></span>
+        <input data-k="color" value="${escapeAttr(it.color || '')}" style="width:88px" />
+      </td>
+      <td class="actions">
+        <button class="primary-btn small-btn" data-act="save">${t('save')}</button>
+        <button class="danger-btn" data-act="del">${t('deleteBtn')}</button>
+      </td>`;
+    bindRowEvents(tr, it);
+    return tr;
+  }
+
+  function selectHtml(key, val, opts) {
+    return `<select data-k="${key}">` +
+      opts.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('') +
+      `</select>`;
+  }
+
+  function bindRowEvents(row, original) {
+    row.querySelectorAll('[data-k]').forEach(input => {
+      input.addEventListener('input',  () => row.classList.add('dirty'));
+      input.addEventListener('change', () => row.classList.add('dirty'));
+    });
+    row.querySelector('[data-act="save"]').addEventListener('click', () => saveRow(row, original));
+    row.querySelector('[data-act="del"]').addEventListener('click',  () => deleteItem(original.id));
+  }
+
+  function collectFields(scope) {
+    const fields = {};
+    scope.querySelectorAll('[data-k]').forEach(el => { fields[el.dataset.k] = el.value; });
+    return fields;
+  }
+
+  async function saveRow(scope, original) {
+    const fields = collectFields(scope);
+    try {
+      const r = await postToScript({ action: 'update', password: adminPw, id: original.id, ...fields });
+      if (!r.ok) throw new Error(r.error || 'fail');
+      Object.assign(original, fields);
+      scope.classList.remove('dirty');
+      // 색상 점 갱신
+      const dot = scope.querySelector('.color-dot');
+      if (dot) dot.style.background = fields.color || '#fff';
+      state.deck = null;
+      showToast(t('saved'));
+    } catch (e) {
+      console.error(e); showToast(t('saveFail'));
+    }
+  }
+
+  async function deleteItem(id) {
+    if (!confirm(t('confirmDelete'))) return;
+    try {
+      const r = await postToScript({ action: 'delete', password: adminPw, id });
+      if (!r.ok) throw new Error(r.error || 'fail');
+      adminItems = adminItems.filter(x => x.id !== id);
+      state.deck = null;
+      renderAdmin();
+      showToast(t('deleted'));
+    } catch (e) {
+      console.error(e); showToast(t('saveFail'));
+    }
+  }
+
+  function renderAdminCards(items, container) {
+    const grid = document.createElement('div');
+    grid.className = 'admin-cards';
+    items.forEach(it => grid.appendChild(buildAdminCardEl(it)));
+    container.innerHTML = '';
+    container.appendChild(grid);
+  }
+
+  function buildAdminCardEl(it) {
+    const card = document.createElement('div');
+    card.className = 'admin-card';
+    const color = it.color || CATEGORY_COLOR[it.category] || '#FFD6E0';
+    card.innerHTML = `
+      <div class="ac-top">
+        <span class="ac-cat" style="background:${escapeAttr(color)}">${escapeHtml(it.categoryLabel || it.category)}</span>
+        <span class="ac-meta">${escapeHtml(formatTs(it.timestamp))}</span>
+      </div>
+      <textarea data-k="question">${escapeHtml(it.question || '')}</textarea>
+      <div class="ac-row">
+        ${selectHtml('category', it.category, CAT_OPTIONS)}
+        <input type="text" data-k="categoryLabel" value="${escapeAttr(it.categoryLabel || '')}" placeholder="라벨" />
+      </div>
+      <div class="ac-row">
+        ${selectHtml('type', it.type, TYPE_OPTIONS)}
+        <input type="text" data-k="typeLabel" value="${escapeAttr(it.typeLabel || '')}" placeholder="라벨" />
+      </div>
+      <div class="ac-row">
+        ${selectHtml('lang', it.lang, ['ko','en','ja'])}
+        <input type="text" data-k="color" value="${escapeAttr(it.color || '')}" style="width:90px" />
+        <span class="color-dot" style="background:${escapeAttr(color)}"></span>
+      </div>
+      <div class="ac-actions">
+        <button class="danger-btn" data-act="del">${t('deleteBtn')}</button>
+        <button class="primary-btn small-btn" data-act="save">${t('save')}</button>
+      </div>`;
+    bindRowEvents(card, it);
+    return card;
+  }
+
+  function escapeAttr(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
+  function formatTs(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d)) return String(s);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
 
   // ============ Init ============
   applyLang('ko');

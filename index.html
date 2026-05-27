@@ -234,6 +234,50 @@
     </div>
   </div>
 
+  <!-- 숨겨진 관리자 입구 (우측 하단) -->
+  <button class="admin-gate" id="adminGate" aria-label="admin" title=""></button>
+
+  <!-- 관리자 잠금 모달 -->
+  <div class="modal" id="adminLockModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="adminLockClose" aria-label="close">✕</button>
+      <h3 data-i18n="adminTitle">관리자 모드</h3>
+      <p class="muted small" data-i18n="adminDesc">비밀번호를 입력해 주세요.</p>
+      <input type="password" id="adminPwInput" class="etc-input" style="width:100%"
+             data-i18n-placeholder="adminPwPh" placeholder="비밀번호" autocomplete="off" />
+      <div class="action-row" style="margin-top:12px">
+        <button class="primary-btn" id="adminLoginBtn" data-i18n="adminEnter">입장</button>
+      </div>
+      <p class="muted small" id="adminLoginMsg"></p>
+    </div>
+  </div>
+
+  <!-- 관리자 대시보드 -->
+  <div class="admin-overlay" id="adminPanel" hidden>
+    <header class="admin-header">
+      <h2 data-i18n="adminTitle">관리자 모드</h2>
+      <div class="admin-tools">
+        <div class="view-toggle">
+          <button class="vt active" data-view="list" data-i18n="viewList">리스트</button>
+          <button class="vt" data-view="card" data-i18n="viewCard">카드</button>
+        </div>
+        <input type="search" id="adminSearch" data-i18n-placeholder="searchPh" placeholder="검색" />
+        <select id="adminFilterCat">
+          <option value="" data-i18n="allCat">전체 카테고리</option>
+          <option value="mind">마음</option>
+          <option value="thought">생각</option>
+          <option value="body">몸</option>
+          <option value="relation">관계</option>
+          <option value="etc">기타</option>
+        </select>
+        <button class="ghost-btn" id="adminReloadBtn" data-i18n="reload">새로고침</button>
+        <button class="ghost-btn" id="adminLogoutBtn" data-i18n="logout">로그아웃</button>
+      </div>
+    </header>
+    <div class="admin-stats" id="adminStats"></div>
+    <div class="admin-content" id="adminContent"></div>
+  </div>
+
   <div class="toast" id="toast" hidden></div>
 
   <script src="i18n.js"></script>

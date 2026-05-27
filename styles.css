@@ -302,6 +302,98 @@ h2 { margin-top: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
 
+/* ========== Admin gate (hidden entry) ========== */
+.admin-gate {
+  position: fixed; right: 10px; bottom: 10px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(0,0,0,.12); border: none; padding: 0;
+  cursor: pointer; z-index: 30;
+  transition: background .2s ease, transform .2s ease;
+}
+.admin-gate:hover { background: rgba(0,0,0,.35); transform: scale(1.2); }
+
+/* ========== Admin overlay ========== */
+.admin-overlay {
+  position: fixed; inset: 0; background: #fff; z-index: 100;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.admin-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap;
+}
+.admin-header h2 { margin: 0; }
+.admin-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.admin-tools input[type="search"],
+.admin-tools select {
+  padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit;
+}
+.view-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.view-toggle .vt { background: #fff; border: none; padding: 6px 14px; cursor: pointer; font: inherit; }
+.view-toggle .vt.active { background: var(--ink); color: #fff; }
+
+.admin-stats {
+  padding: 10px 20px; color: var(--muted); font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-content { flex: 1; overflow: auto; padding: 16px 20px; }
+
+/* List view */
+.admin-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+.admin-table th, .admin-table td {
+  border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; text-align: left;
+}
+.admin-table th { background: var(--bg); position: sticky; top: 0; font-weight: 700; }
+.admin-table td input,
+.admin-table td select,
+.admin-table td textarea {
+  width: 100%; padding: 4px 6px; border: 1px solid transparent; border-radius: 6px;
+  font: inherit; background: transparent;
+}
+.admin-table td input:focus,
+.admin-table td select:focus,
+.admin-table td textarea:focus { border-color: var(--ink); background: #fff; outline: none; }
+.admin-table td.actions { white-space: nowrap; }
+.admin-table tr.dirty td:first-child { box-shadow: inset 4px 0 0 #ffb84a; }
+.admin-table .color-dot {
+  display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.1); vertical-align: middle; margin-right: 4px;
+}
+
+/* Card view */
+.admin-cards {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.admin-card {
+  border: 1px solid var(--line); border-radius: 14px; padding: 14px;
+  background: #fff; display: flex; flex-direction: column; gap: 8px;
+}
+.admin-card .ac-top {
+  display: flex; align-items: center; gap: 8px; justify-content: space-between;
+}
+.admin-card .ac-cat {
+  padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
+}
+.admin-card .ac-meta { font-size: 11px; color: var(--muted); }
+.admin-card textarea {
+  width: 100%; min-height: 70px; padding: 8px; border: 1px solid var(--line);
+  border-radius: 8px; resize: vertical; font: inherit;
+}
+.admin-card .ac-row {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+}
+.admin-card select, .admin-card input[type="text"] {
+  padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px;
+}
+.admin-card .ac-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.danger-btn {
+  background: #ffe7e7; color: #b00020; border: 1px solid #ffd0d0;
+  border-radius: 16px; padding: 5px 12px; cursor: pointer; font: inherit; font-size: 12px;
+}
+
 /* ========== Toast ========== */
 .toast {
   position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
