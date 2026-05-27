@@ -293,6 +293,25 @@
     </div>
   </div>
 
+  <!-- 공유 확인 모달 -->
+  <div class="modal" id="shareConfirmModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="shareConfirmClose" aria-label="close">✕</button>
+      <div class="share-confirm-emoji" aria-hidden="true">💌</div>
+      <h3 data-i18n="shareConfirmTitle">정말 공유할까요?</h3>
+      <ul class="share-confirm-list">
+        <li data-i18n-html="shareConfirmRule1">한 번 공유한 질문은 <b>수정하거나 지울 수 없어요.</b></li>
+        <li data-i18n-html="shareConfirmRule2">맞춤법은 알맞게 썼는지 한 번 더 살펴봐요.</li>
+        <li data-i18n-html="shareConfirmRule3">친구의 마음을 다치게 하는 말은 없는지 확인해요.</li>
+      </ul>
+      <p class="muted small" data-i18n="shareConfirmHint">읽어보고 괜찮으면 ‘네, 공유할게요!’를 눌러주세요. 💖</p>
+      <div class="action-row" style="margin-top:16px">
+        <button class="ghost-btn"   id="shareConfirmCancel" data-i18n="shareConfirmCancel">다시 살펴볼게요</button>
+        <button class="primary-btn" id="shareConfirmOk"     data-i18n="shareConfirmOk">네, 공유할게요!</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 최대 카드 수 안내 모달 -->
   <div class="modal" id="maxCardModal" hidden>
     <div class="modal-inner">

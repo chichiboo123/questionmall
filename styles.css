@@ -340,12 +340,13 @@ h2 {
   font-family: 'Noto Serif KR', 'Black Han Sans', Georgia, serif;
   font-size: 56px;
   line-height: 1;
-  color: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.85);
   font-weight: 700;
   user-select: none;
   letter-spacing: -2px;
   position: absolute;
   pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,.04);
 }
 .quote-mark.quote-open  { top: 8px; left: 6px; }
 .quote-mark.quote-close { right: 6px; bottom: 2px; }
@@ -372,13 +373,11 @@ h2 {
   max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* 그라데이션 — 어린이 친화 부드러움 */
+/* 카드 앞면은 단일 파스텔 톤으로 — 어두운 그라데이션 제거 */
 .card-front::before {
   content: '';
   position: absolute; inset: 0;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(255,255,255,.5), transparent 50%),
-    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 55%);
+  background: rgba(255,255,255,.18);
   pointer-events: none;
   z-index: 1;
 }
@@ -541,9 +540,7 @@ h2 {
 .draw-card .face.front::before {
   content: '';
   position: absolute; inset: 0;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(255,255,255,.45), transparent 50%),
-    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 55%);
+  background: rgba(255,255,255,.18);
   pointer-events: none;
 }
 .draw-card .d-top {
@@ -573,7 +570,7 @@ h2 {
 }
 .draw-card .d-quote-l, .draw-card .d-quote-r {
   font-family: 'Noto Serif KR', Georgia, serif;
-  font-size: 32px; line-height: 1; color: rgba(0,0,0,.22); font-weight: 700;
+  font-size: 32px; line-height: 1; color: rgba(255,255,255,.85); font-weight: 700;
   position: absolute; pointer-events: none;
 }
 .draw-card .d-quote-l { top: 4px; left: 4px; }
@@ -647,9 +644,7 @@ h2 {
   opacity: .82;
 }
 .lotto-card .face.front::before {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(255,255,255,.45), transparent 50%),
-    radial-gradient(circle at 0% 100%, rgba(255,255,255,.3), transparent 55%);
+  background: rgba(255,255,255,.18);
 }
 .lotto-card .face.back .b-mark {
   position: relative; z-index: 2; font-family: 'Black Han Sans', sans-serif;
@@ -691,7 +686,7 @@ h2 {
 .lotto-card .face.front .l-quote-l,
 .lotto-card .face.front .l-quote-r {
   font-family: 'Noto Serif KR', Georgia, serif;
-  font-size: 56px; line-height: 1; color: rgba(0,0,0,.22); font-weight: 700;
+  font-size: 56px; line-height: 1; color: rgba(255,255,255,.85); font-weight: 700;
   position: absolute; pointer-events: none;
 }
 .lotto-card .face.front .l-quote-l { top: 8px; left: 6px; }
@@ -791,6 +786,30 @@ h2 {
 .help-list li { padding-left: 6px; font-size: 15px; }
 .help-list li::marker { color: var(--accent); font-weight: 800; }
 .export-row { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+
+/* ===== Share confirmation modal ===== */
+.share-confirm-emoji {
+  font-size: 48px; text-align: center; margin-bottom: 6px;
+  animation: wave 2.4s ease-in-out infinite;
+}
+.share-confirm-list {
+  list-style: none; padding: 12px 16px; margin: 6px 0 10px;
+  background: var(--accent-soft);
+  border-radius: 16px;
+  border: 2px dashed #ffc7d8;
+}
+.share-confirm-list li {
+  position: relative;
+  padding: 6px 0 6px 26px;
+  font-size: 14px; font-weight: 600; line-height: 1.55;
+  color: var(--ink);
+}
+.share-confirm-list li::before {
+  content: '🌷';
+  position: absolute; left: 2px; top: 6px;
+  font-size: 14px;
+}
+.share-confirm-list li b { color: var(--accent-dark); font-weight: 800; }
 
 .muted { color: var(--muted); }
 .small { font-size: 12px; }

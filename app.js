@@ -55,12 +55,16 @@
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const k = el.getAttribute('data-i18n'); if (dict[k]) el.textContent = dict[k];
     });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const k = el.getAttribute('data-i18n-html'); if (dict[k]) el.innerHTML = dict[k];
+    });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const k = el.getAttribute('data-i18n-placeholder'); if (dict[k]) el.setAttribute('placeholder', dict[k]);
     });
     const labels = { ko: '한국어', en: 'English', ja: '日本語' };
     document.getElementById('langCurrent').textContent = labels[lang];
     renderCardLabels();
+    rerenderTranslatedDecks();
   }
 
   function showToast(msg) {
@@ -358,7 +362,14 @@
   }
 
   // ============ Share (Apps Script) ============
-  $('#shareBtn').addEventListener('click', async () => {
+  // 공유하기는 한 번 누르면 되돌릴 수 없으므로 확인 모달을 먼저 띄운다
+  $('#shareBtn').addEventListener('click', () => {
+    $('#shareConfirmModal').hidden = false;
+  });
+  $('#shareConfirmClose').addEventListener('click', () => { $('#shareConfirmModal').hidden = true; });
+  $('#shareConfirmCancel').addEventListener('click', () => { $('#shareConfirmModal').hidden = true; });
+  $('#shareConfirmOk').addEventListener('click', async () => {
+    $('#shareConfirmModal').hidden = true;
     const payload = {
       timestamp: new Date().toISOString(),
       lang: state.lang,
@@ -579,16 +590,38 @@
     const map = { choice:'typeChoice', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
     return d[map[value]] || value || '';
   }
+
+  // 카드의 현재 언어 텍스트를 반환. 스프레드시트의 GOOGLETRANSLATE 결과(question_ko/en/ja 등)를
+  // 우선 사용하고, 없으면 원본(question)을 그대로 표시한다.
+  function pickLangField(card, base) {
+    const lang = state.lang;
+    const v = card[base + '_' + lang];
+    if (v != null && String(v).trim() !== '') return String(v);
+    return card[base] != null ? String(card[base]) : '';
+  }
+  function cardQuestion(card) { return pickLangField(card, 'question'); }
+  function cardCategoryLabel(card) {
+    // 사전 정의 카테고리는 i18n 매핑이 항상 정확하므로 그쪽을 우선 사용
+    if (card.category && card.category !== 'etc') return categoryLabelFor(card.category);
+    const v = pickLangField(card, 'categoryLabel');
+    return v || categoryLabelFor(card.category);
+  }
+  function cardTypeLabel(card) {
+    if (card.type && card.type !== 'etc') return typeLabelFor(card.type);
+    const v = pickLangField(card, 'typeLabel');
+    return v || typeLabelFor(card.type);
+  }
   function catEmojiFor(value) { return CATEGORY_EMOJI[value] || '⭐'; }
   function catColor2For(value){ return CATEGORY_COLOR_2[value] || '#FFA8BD'; }
 
   function buildDrawCard(card) {
     const wrap = document.createElement('div');
     wrap.className = 'draw-card';
+    wrap._cardRef = card;
     const color  = card.color || CATEGORY_COLOR[card.category] || '#FFD6E0';
     const color2 = catColor2For(card.category);
-    const catLabel  = card.categoryLabel || categoryLabelFor(card.category);
-    const typeLabel = card.typeLabel || typeLabelFor(card.type);
+    const catLabel  = cardCategoryLabel(card);
+    const typeLabel = cardTypeLabel(card);
     const catEm  = catEmojiFor(card.category);
     const author = card.author ? `— ${escapeHtml(card.author)}` : '';
     wrap.innerHTML = `
@@ -605,7 +638,7 @@
           </div>
           <div class="d-body">
             <span class="d-quote-l">“</span>
-            <div class="d-q">${escapeHtml(card.question)}</div>
+            <div class="d-q">${escapeHtml(cardQuestion(card))}</div>
             <span class="d-quote-r">”</span>
           </div>
           <div class="d-bottom">
@@ -654,10 +687,11 @@
   function buildLottoCard(card) {
     const wrap = document.createElement('div');
     wrap.className = 'lotto-card flipped'; // 처음엔 앞면(질문) 바로 보이도록
+    wrap._cardRef = card;
     const color  = card.color || CATEGORY_COLOR[card.category] || '#FFD6E0';
     const color2 = catColor2For(card.category);
-    const catLabel  = card.categoryLabel || categoryLabelFor(card.category);
-    const typeLabel = card.typeLabel || typeLabelFor(card.type);
+    const catLabel  = cardCategoryLabel(card);
+    const typeLabel = cardTypeLabel(card);
     const catEm  = catEmojiFor(card.category);
     const author = card.author ? `— ${escapeHtml(card.author)}` : '';
     wrap.innerHTML = `
@@ -674,7 +708,7 @@
           </div>
           <div class="l-body">
             <span class="l-quote-l">“</span>
-            <div class="l-q">${escapeHtml(card.question)}</div>
+            <div class="l-q">${escapeHtml(cardQuestion(card))}</div>
             <span class="l-quote-r">”</span>
           </div>
           <div class="l-bottom">
@@ -685,6 +719,41 @@
       </div>`;
     wrap.addEventListener('click', () => wrap.classList.toggle('flipped'));
     return wrap;
+  }
+
+  // 언어가 바뀌면 현재 표시 중인 탐험대/로또 카드를 재렌더링한다
+  function rerenderTranslatedDecks() {
+    const drawGrid = document.getElementById('drawGrid');
+    if (drawGrid) {
+      drawGrid.querySelectorAll('.draw-card').forEach(wrap => {
+        const card = wrap._cardRef; if (!card) return;
+        const qEl = wrap.querySelector('.d-q');
+        const catEl = wrap.querySelector('.d-cat span:last-child');
+        const typeEl = wrap.querySelector('.d-type span');
+        const bTitle = wrap.querySelector('.b-title');
+        const bTagline = wrap.querySelector('.b-tagline');
+        if (qEl) qEl.textContent = cardQuestion(card);
+        if (catEl) catEl.textContent = cardCategoryLabel(card);
+        if (typeEl) typeEl.textContent = cardTypeLabel(card);
+        if (bTitle) bTitle.textContent = t('backTitle');
+        if (bTagline) bTagline.textContent = t('backTagline');
+      });
+    }
+    const lottoStage = document.getElementById('lottoStage');
+    const wrap = lottoStage && lottoStage.querySelector('.lotto-card');
+    const card = wrap && wrap._cardRef;
+    if (wrap && card) {
+      const qEl = wrap.querySelector('.l-q');
+      const catEl = wrap.querySelector('.l-cat span:last-child');
+      const typeEl = wrap.querySelector('.l-type span');
+      const bTitle = wrap.querySelector('.b-title');
+      const bTagline = wrap.querySelector('.b-tagline');
+      if (qEl) qEl.textContent = cardQuestion(card);
+      if (catEl) catEl.textContent = cardCategoryLabel(card);
+      if (typeEl) typeEl.textContent = cardTypeLabel(card);
+      if (bTitle) bTitle.textContent = t('backTitle');
+      if (bTagline) bTagline.textContent = t('backTagline');
+    }
   }
 
   // ============ Admin Mode ============
