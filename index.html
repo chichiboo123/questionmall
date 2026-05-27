@@ -180,17 +180,23 @@
         <div class="emoji-picker">
           <p class="emoji-hint muted small" data-i18n="emojiHint">앞면 좌측 하단에 들어갈 이모지를 골라보세요.</p>
           <div class="emoji-tabs" id="emojiTabs">
-            <button class="emoji-tab active" data-pack="face"   data-i18n="emojiFace">표정</button>
-            <button class="emoji-tab" data-pack="hand"   data-i18n="emojiHand">손짓</button>
-            <button class="emoji-tab" data-pack="nature" data-i18n="emojiNature">자연</button>
-            <button class="emoji-tab" data-pack="food"   data-i18n="emojiFood">음식</button>
-            <button class="emoji-tab" data-pack="animal" data-i18n="emojiAnimal">동물</button>
-            <button class="emoji-tab" data-pack="symbol" data-i18n="emojiSymbol">기호</button>
+            <button class="emoji-tab active" data-pack="face"     data-i18n="emojiFace">표정</button>
+            <button class="emoji-tab" data-pack="hand"     data-i18n="emojiHand">손짓</button>
+            <button class="emoji-tab" data-pack="animal"   data-i18n="emojiAnimal">동물</button>
+            <button class="emoji-tab" data-pack="nature"   data-i18n="emojiNature">자연</button>
+            <button class="emoji-tab" data-pack="food"     data-i18n="emojiFood">음식</button>
+            <button class="emoji-tab" data-pack="activity" data-i18n="emojiActivity">활동</button>
+            <button class="emoji-tab" data-pack="object"   data-i18n="emojiObject">사물</button>
+            <button class="emoji-tab" data-pack="symbol"   data-i18n="emojiSymbol">기호</button>
+          </div>
+          <div class="emoji-recent-row" id="emojiRecentRow" hidden>
+            <span class="emoji-recent-label" data-i18n="emojiRecent">최근 사용</span>
+            <div class="emoji-recent-list" id="emojiRecentList"></div>
           </div>
           <div class="emoji-list" id="emojiList"></div>
           <div class="emoji-custom-row">
             <input type="text" id="customEmojiInput" class="custom-emoji-input" maxlength="8" autocomplete="off" placeholder="😀" aria-label="custom emoji" />
-            <button class="ghost-btn small-btn" id="applyCustomEmojiBtn">내 이모지 넣기</button>
+            <button class="ghost-btn small-btn" id="applyCustomEmojiBtn" data-i18n="applyCustomEmoji">내 이모지 넣기</button>
           </div>
 
           <button class="ghost-btn small-btn" id="clearEmojiBtn" data-i18n="clearEmoji">이모지 제거</button>
@@ -290,6 +296,25 @@
         <button class="ghost-btn" id="copyFrontBtn" data-i18n="copyFront">앞면 클립보드 복사</button>
       </div>
       <p class="muted small" id="exportMsg"></p>
+    </div>
+  </div>
+
+  <!-- 공유 확인 모달 -->
+  <div class="modal" id="shareConfirmModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="shareConfirmClose" aria-label="close">✕</button>
+      <div class="share-confirm-emoji" aria-hidden="true">💌</div>
+      <h3 data-i18n="shareConfirmTitle">정말 공유할까요?</h3>
+      <ul class="share-confirm-list">
+        <li data-i18n-html="shareConfirmRule1">한 번 공유한 질문은 <b>수정하거나 지울 수 없어요.</b></li>
+        <li data-i18n-html="shareConfirmRule2">맞춤법은 알맞게 썼는지 한 번 더 살펴봐요.</li>
+        <li data-i18n-html="shareConfirmRule3">친구의 마음을 다치게 하는 말은 없는지 확인해요.</li>
+      </ul>
+      <p class="muted small" data-i18n="shareConfirmHint">읽어보고 괜찮으면 ‘네, 공유할게요!’를 눌러주세요. 💖</p>
+      <div class="action-row" style="margin-top:16px">
+        <button class="ghost-btn"   id="shareConfirmCancel" data-i18n="shareConfirmCancel">다시 살펴볼게요</button>
+        <button class="primary-btn" id="shareConfirmOk"     data-i18n="shareConfirmOk">네, 공유할게요!</button>
+      </div>
     </div>
   </div>
 

@@ -10,8 +10,13 @@
  *  5) 배포 → "웹 앱" → 액세스 권한: "모든 사용자"
  *  6) 생성된 Web App URL을 프론트엔드 `app.js`의 `SHEETS_WEBAPP_URL`에 붙여넣기
  *
+ * ✨ 번역 컬럼
+ *   row를 추가할 때 원문 lang 열에는 입력값을, 나머지 두 언어 열에는
+ *   `=GOOGLETRANSLATE(원문셀, 원문lang, 대상lang)` 수식을 자동으로 넣어둔다.
+ *   기존 데이터를 한 번에 채우려면 메뉴 "QuestionMall → 번역 컬럼 채우기" 실행.
+ *
  * 엔드포인트
- *  - GET   ?action=list[&category=&type=&limit=]  : 카드 목록 (공개)
+ *  - GET   ?action=list[&category=&type=&limit=]  : 카드 목록 (공개, 모든 번역 컬럼 포함)
  *  - GET   ?action=count                          : 카드 수
  *  - POST  {question, ...}                        : 카드 생성 (공개)
  *  - POST  {action:'verify', password}            : 관리자 비밀번호 확인
@@ -23,37 +28,38 @@
 const SHEET_NAME = 'cards';
 const HEADERS = [
   'id', 'timestamp', 'lang',
-  'category', 'categoryLabel',
-  'type', 'typeLabel',
-  'question', 'color', 'author',
+  'category',
+  'categoryLabel', 'categoryLabel_ko', 'categoryLabel_en', 'categoryLabel_ja',
+  'type',
+  'typeLabel', 'typeLabel_ko', 'typeLabel_en', 'typeLabel_ja',
+  'question', 'question_ko', 'question_en', 'question_ja',
+  'color', 'author',
 ];
+// 사용자가 직접 편집할 수 있는 컬럼 (관리자 UPDATE에서 허용)
 const EDITABLE = ['lang', 'category', 'categoryLabel', 'type', 'typeLabel', 'question', 'color', 'author'];
+
+// 번역이 필요한 원본 컬럼들 (원본명 → 번역 컬럼 prefix)
+const TRANSLATABLE = ['question', 'categoryLabel', 'typeLabel'];
+const ALL_LANGS = ['ko', 'en', 'ja'];
 
 /** ────────────── Menu + 자동 초기화 ────────────── */
 
-// 스프레드시트를 열 때마다 실행 — cards 시트가 없으면 자동 생성
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('QuestionMall')
     .addItem('시트 초기화 (헤더 재설정)', 'initSheet')
     .addItem('샘플 데이터 추가', 'seedSamples')
     .addItem('관리자 비밀번호 설정', 'promptSetAdminPassword')
+    .addItem('번역 컬럼 채우기 (기존 행 일괄)', 'backfillTranslations')
     .addToUi();
-
   autoInit();
 }
 
-// 스크립트가 처음 설치될 때 실행 (Apps Script가 Sheets에 처음 연결될 때)
-function onInstall() {
-  onOpen();
-}
+function onInstall() { onOpen(); }
 
-// cards 시트가 없을 때만 자동으로 헤더 생성 (기존 데이터 보호)
 function autoInit() {
   const ss = SpreadsheetApp.getActive();
-  if (!ss.getSheetByName(SHEET_NAME)) {
-    initSheet();
-  }
+  if (!ss.getSheetByName(SHEET_NAME)) initSheet();
 }
 
 function initSheet() {
@@ -63,22 +69,17 @@ function initSheet() {
   sh.clear();
   sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
   sh.setFrozenRows(1);
-  const widths = [120, 170, 60, 90, 110, 90, 110, 360, 90, 110];
-  widths.forEach((w, i) => sh.setColumnWidth(i + 1, w));
   SpreadsheetApp.getActive().toast('시트 초기화 완료', 'QuestionMall');
 }
 
 function seedSamples() {
   const samples = [
-    ['mind','마음','choice','선택질문','오늘 가장 행복했던 순간은?','#FFD6E0',''],
-    ['thought','생각','imagine','상상질문','내가 투명인간이 된다면 무엇을 할까?','#D6E5FF',''],
-    ['body','몸','exp','경험질문','가장 좋아하는 운동은?','#D6F5D6',''],
-    ['relation','관계','choice','선택질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2',''],
+    { lang:'ko', category:'mind',     categoryLabel:'마음', type:'choice', typeLabel:'선택질문', question:'오늘 가장 행복했던 순간은?',            color:'#FFD6E0', author:'' },
+    { lang:'ko', category:'thought',  categoryLabel:'생각', type:'imagine', typeLabel:'상상질문', question:'내가 투명인간이 된다면 무엇을 할까?', color:'#D6E5FF', author:'' },
+    { lang:'ko', category:'body',     categoryLabel:'몸',   type:'exp',     typeLabel:'경험질문', question:'가장 좋아하는 운동은?',                  color:'#D6F5D6', author:'' },
+    { lang:'ko', category:'relation', categoryLabel:'관계', type:'choice',  typeLabel:'선택질문', question:'친구가 슬퍼할 때 어떻게 위로해줄까?',  color:'#FFF4C2', author:'' },
   ];
-  const sh = ensureSheet();
-  samples.forEach(s => {
-    sh.appendRow([uuid(), new Date().toISOString(), 'ko', s[0], s[1], s[2], s[3], s[4], s[5], s[6]]);
-  });
+  samples.forEach(s => appendCard(s));
 }
 
 function promptSetAdminPassword() {
@@ -103,32 +104,14 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const action = data.action || 'create';
 
-    // 공개: 카드 생성
     if (action === 'create') {
       if (!data.question) return json({ ok: false, error: 'question required' });
-      const sh = ensureSheet();
-      const id = uuid();
-      sh.appendRow([
-        id,
-        data.timestamp || new Date().toISOString(),
-        data.lang || 'ko',
-        data.category || '',
-        data.categoryLabel || '',
-        data.type || '',
-        data.typeLabel || '',
-        String(data.question).slice(0, 500),
-        data.color || '',
-        String(data.author || '').slice(0, 30),
-      ]);
+      const id = appendCard(data);
       return json({ ok: true, id });
     }
 
-    // 관리자: 비밀번호 검증만
-    if (action === 'verify') {
-      return json({ ok: isAuthed(data.password) });
-    }
+    if (action === 'verify') return json({ ok: isAuthed(data.password) });
 
-    // 아래는 모두 관리자 인증 필요
     if (!isAuthed(data.password)) return json({ ok: false, error: 'unauthorized' });
 
     if (action === 'admin-list') {
@@ -137,20 +120,7 @@ function doPost(e) {
 
     if (action === 'admin-create') {
       if (!data.question) return json({ ok: false, error: 'question required' });
-      const sh = ensureSheet();
-      const id = uuid();
-      sh.appendRow([
-        id,
-        data.timestamp || new Date().toISOString(),
-        data.lang || 'ko',
-        data.category || '',
-        data.categoryLabel || '',
-        data.type || '',
-        data.typeLabel || '',
-        String(data.question).slice(0, 500),
-        data.color || '',
-        String(data.author || '').slice(0, 30),
-      ]);
+      const id = appendCard(data);
       return json({ ok: true, id });
     }
 
@@ -159,6 +129,8 @@ function doPost(e) {
       const sh = ensureSheet();
       const rowIdx = findRowById(sh, data.id);
       if (rowIdx < 0) return json({ ok: false, error: 'not found' });
+
+      // 먼저 일반 필드를 직접 쓴다
       EDITABLE.forEach(key => {
         if (key in data) {
           const col = HEADERS.indexOf(key) + 1;
@@ -167,6 +139,15 @@ function doPost(e) {
           sh.getRange(rowIdx, col).setValue(val);
         }
       });
+
+      // 번역 대상 필드 또는 lang이 바뀌었으면 _ko/_en/_ja 수식을 다시 셋업
+      const langChanged = ('lang' in data);
+      const translatableChanged = TRANSLATABLE.some(k => k in data);
+      if (langChanged || translatableChanged) {
+        const row = sh.getRange(rowIdx, 1, 1, HEADERS.length).getValues()[0];
+        const lang = String(row[HEADERS.indexOf('lang')] || 'ko');
+        TRANSLATABLE.forEach(base => writeTranslationCells(sh, rowIdx, base, lang));
+      }
       return json({ ok: true });
     }
 
@@ -185,7 +166,7 @@ function doPost(e) {
   }
 }
 
-/** ────────────── HTTP: GET (공개 조회) ────────────── */
+/** ────────────── HTTP: GET ────────────── */
 function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || 'list';
   if (action === 'count') return json({ count: readAll().length });
@@ -208,6 +189,83 @@ function doGet(e) {
     return json(out);
   }
   return json({ ok: false, error: 'unknown action' });
+}
+
+/** ────────────── 신규 카드 추가 (번역 수식 자동 세팅) ────────────── */
+function appendCard(data) {
+  const sh = ensureSheet();
+  const id = uuid();
+  const lang = String(data.lang || 'ko');
+
+  // 일단 한 줄 추가 — 원본 필드만 채우고 번역 컬럼은 비워둔다
+  const row = HEADERS.map(h => {
+    switch (h) {
+      case 'id': return id;
+      case 'timestamp': return data.timestamp || new Date().toISOString();
+      case 'lang': return lang;
+      case 'category': return data.category || '';
+      case 'categoryLabel': return data.categoryLabel || '';
+      case 'type': return data.type || '';
+      case 'typeLabel': return data.typeLabel || '';
+      case 'question': return String(data.question || '').slice(0, 500);
+      case 'color': return data.color || '';
+      case 'author': return String(data.author || '').slice(0, 30);
+      default: return ''; // _ko/_en/_ja 컬럼들
+    }
+  });
+  sh.appendRow(row);
+  const rowIdx = sh.getLastRow();
+
+  // 번역 컬럼 (질문/카테고리라벨/타입라벨) 수식 설정
+  TRANSLATABLE.forEach(base => writeTranslationCells(sh, rowIdx, base, lang));
+
+  return id;
+}
+
+/**
+ * 한 행의 base_ko/base_en/base_ja 셀을 채운다.
+ *  - 원본 lang에 해당하는 셀: ={원본셀}    (참조)
+ *  - 그 외 lang 셀: =IFERROR(GOOGLETRANSLATE({원본셀}, "원본lang", "대상lang"), {원본셀})
+ *  - 원본 텍스트가 비어 있으면 모든 번역 셀도 비움
+ */
+function writeTranslationCells(sh, rowIdx, base, lang) {
+  const baseCol = HEADERS.indexOf(base) + 1;
+  if (baseCol <= 0) return;
+  const baseA1 = colLetter(baseCol) + rowIdx;
+  const baseVal = sh.getRange(rowIdx, baseCol).getValue();
+
+  ALL_LANGS.forEach(L => {
+    const tCol = HEADERS.indexOf(base + '_' + L) + 1;
+    if (tCol <= 0) return;
+    const cell = sh.getRange(rowIdx, tCol);
+    if (baseVal === '' || baseVal == null) { cell.clearContent(); return; }
+    if (L === lang) {
+      cell.setFormula('=' + baseA1);
+    } else {
+      cell.setFormula(
+        '=IFERROR(GOOGLETRANSLATE(' + baseA1 + ', "' + lang + '", "' + L + '"), ' + baseA1 + ')'
+      );
+    }
+  });
+}
+
+/**
+ * 기존 행들에 대해 번역 수식을 다시 채우는 보조 함수.
+ * 메뉴에서 "번역 컬럼 채우기" 실행 시 호출된다.
+ */
+function backfillTranslations() {
+  const sh = ensureSheet();
+  const last = sh.getLastRow();
+  if (last < 2) {
+    SpreadsheetApp.getActive().toast('데이터가 없어요.', 'QuestionMall');
+    return;
+  }
+  const langCol = HEADERS.indexOf('lang') + 1;
+  for (let r = 2; r <= last; r++) {
+    const lang = String(sh.getRange(r, langCol).getValue() || 'ko');
+    TRANSLATABLE.forEach(base => writeTranslationCells(sh, r, base, lang));
+  }
+  SpreadsheetApp.getActive().toast('번역 컬럼 채우기 완료', 'QuestionMall');
 }
 
 /** ────────────── Helpers ────────────── */
@@ -238,8 +296,8 @@ function ensureSheet() {
     sh.setFrozenRows(1);
     return sh;
   }
-  // 헤더 자동 마이그레이션 — 누락된 컬럼을 우측에 추가 (예: 기존 시트에 author 없음)
-  const lastCol = sh.getLastColumn();
+  // 누락된 컬럼을 우측으로 추가 (기존 데이터 보존)
+  const lastCol = Math.max(sh.getLastColumn(), HEADERS.length);
   const cur = lastCol > 0 ? sh.getRange(1, 1, 1, lastCol).getValues()[0] : [];
   let changed = false;
   HEADERS.forEach((h, i) => {
@@ -250,6 +308,12 @@ function ensureSheet() {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+function colLetter(n) {
+  let s = '';
+  while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+  return s;
 }
 
 function json(obj) {
