@@ -29,14 +29,31 @@ const HEADERS = [
 ];
 const EDITABLE = ['lang', 'category', 'categoryLabel', 'type', 'typeLabel', 'question', 'color'];
 
-/** ────────────── Menu (수동 초기화용) ────────────── */
+/** ────────────── Menu + 자동 초기화 ────────────── */
+
+// 스프레드시트를 열 때마다 실행 — cards 시트가 없으면 자동 생성
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('QuestionMall')
-    .addItem('시트 초기화 (헤더 생성)', 'initSheet')
+    .addItem('시트 초기화 (헤더 재설정)', 'initSheet')
     .addItem('샘플 데이터 추가', 'seedSamples')
     .addItem('관리자 비밀번호 설정', 'promptSetAdminPassword')
     .addToUi();
+
+  autoInit();
+}
+
+// 스크립트가 처음 설치될 때 실행 (Apps Script가 Sheets에 처음 연결될 때)
+function onInstall() {
+  onOpen();
+}
+
+// cards 시트가 없을 때만 자동으로 헤더 생성 (기존 데이터 보호)
+function autoInit() {
+  const ss = SpreadsheetApp.getActive();
+  if (!ss.getSheetByName(SHEET_NAME)) {
+    initSheet();
+  }
 }
 
 function initSheet() {
