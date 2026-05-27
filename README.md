@@ -10,10 +10,8 @@
 [기능 한눈에 보기](#-기능-한눈에-보기) ·
 [로컬 실행](#-로컬-실행) ·
 [스프레드시트 연동](#-구글-스프레드시트-연동) ·
-[관리자 비밀번호](#-관리자-비밀번호-환경변수) ·
 [자동 저장](#-자동-저장-localstorage) ·
 [시트 스펙](#-시트-컬럼-스펙-cards-시트) ·
-[API](#-api-엔드포인트-apps-script-web-app) ·
 [디자인 토큰](#-디자인-토큰) ·
 [트러블슈팅](#-트러블슈팅)
 
@@ -26,7 +24,6 @@
 | 🛠 **질문 제작소** | 카드 1장 만들기 · 꾸미기 · 저장 · 내보내기 | 카드 카운터 · 자동 저장 · 초기화 · 이모지 한 개 |
 | 🧭 **질문 탐험대** | 조건 필터로 1–30장 무작위 뽑기 | 카테고리/유형 다중 선택 · 모두 뒤집기 |
 | 🎰 **질문 로또** | 무작위 한 장만 등장, 다시 뽑기 | 연속 중복 방지 · 등장 애니메이션 · 클릭 플립 |
-| 🔐 (숨김) **관리자** | 전체 카드 검색·수정·삭제 | 우측 하단 회색 점 → 비밀번호 |
 
 ### 🛠 질문 제작소
 - **카드 카운터**: 첫 화면 상단에 지금까지 모인 전체 질문카드 수가 표시돼요.
@@ -49,12 +46,6 @@
 
 ### 🎰 질문 로또
 버튼 한 번에 무작위 1장 등장 · **다시 뽑기**로 계속 갱신 · 같은 카드가 연속해서 두 번 나오지 않게 보정 · 카드 클릭 시 앞·뒷면 플립.
-
-### 🔐 관리자 모드
-- **숨겨진 입구**: 화면 우측 하단의 작은 회색 점
-- **비밀번호 보호**: 비밀번호는 코드/리포지토리에 절대 포함되지 않고 Apps Script **Script Properties**에 보관
-- **대시보드**: 리스트뷰(셀 인라인 편집) / 카드뷰 토글, 검색(질문/라벨/만든 사람), 카테고리 필터, 수정·삭제
-- **세션**: 비밀번호는 메모리에만 — 새로고침/로그아웃 시 휘발
 
 ### 🌐 다국어
 한국어 / English / 日本語 (우측 상단 드롭다운) — 로또·초기화 모달·카운터·토스트 등 **모든 기능 3개 언어 지원**.
@@ -117,21 +108,6 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 
 ---
 
-## 🔐 관리자 비밀번호 (환경변수)
-
-비밀번호는 **Apps Script Script Properties**에 저장 — 코드·리포지토리에 절대 포함되지 않습니다.
-
-| 방법 | 절차 |
-|---|---|
-| **A. 메뉴 (권장)** | 스프레드시트 메뉴 **QuestionMall → 관리자 비밀번호 설정** → 입력 |
-| **B. 수동** | Apps Script 편집기 → ⚙️ 프로젝트 설정 → 스크립트 속성 → `ADMIN_PASSWORD` 추가 |
-
-변경은 즉시 반영(재배포 불필요).
-
-> ⚠️ Web App URL만 알면 누구나 `verify` 호출을 시도할 수 있어요. 추측이 어려운 비밀번호를 쓰세요.
-
----
-
 ## 💾 자동 저장 (localStorage)
 
 키: `questionmall.maker.v1`
@@ -151,13 +127,13 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 | C | `lang` | 작성 언어 | `ko` / `en` / `ja` |
 | D | `category` | 카테고리 코드 | `mind` `thought` `body` `relation` `etc` |
 | E | `categoryLabel` | 표시용 라벨 | `마음` 또는 `미술` |
-| F | `type` | 질문 유형 코드 | `empathy` `imagine` `exp` `dilemma` `etc` |
+| F | `type` | 질문 유형 코드 | `choice` `imagine` `exp` `dilemma` `etc` |
 | G | `typeLabel` | 표시용 라벨 | `선택질문` |
 | H | `question` | 질문 본문 (최대 500자) | `오늘 가장 행복했던 순간은?` |
 | I | `color` | 배경 HEX | `#FFD6E0` |
 | J | `author` | 만든 사람 (최대 30자) | `치수쌤` |
 
-> 💡 `type=empathy`는 내부 코드이고, 화면 표시는 `선택질문`(ko) / `Choice`(en) / `選択`(ja)로 매핑돼요.
+> 💡 `type=choice`는 내부 코드이고, 화면 표시는 `선택질문`(ko) / `Choice`(en) / `選択`(ja)로 매핑돼요.
 
 ---
 
@@ -171,7 +147,7 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
   "lang": "ko",
   "category": "mind",
   "categoryLabel": "마음",
-  "type": "empathy",
+  "type": "choice",
   "typeLabel": "선택질문",
   "question": "오늘 가장 행복했던 순간은?",
   "color": "#FFD6E0",
@@ -179,20 +155,12 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 }
 ```
 
-### POST — 관리자 (비밀번호 필요)
-| action | 설명 |
-|---|---|
-| `verify` | 비밀번호 검증 → `{ ok: true/false }` |
-| `admin-list` | 전체 목록 → `{ ok, items: [...] }` |
-| `update` | 필드 갱신 (수정 가능: `lang`, `category`, `categoryLabel`, `type`, `typeLabel`, `question`, `color`, `author`) |
-| `delete` | id로 삭제 |
-
 ### GET — 공개 조회
 | 쿼리 | 설명 |
 |---|---|
 | `?action=list` | 전체 (배열) |
 | `?action=list&category=mind,thought` | 카테고리 필터 (쉼표 다중) |
-| `?action=list&type=empathy&limit=50` | 유형 필터 + 최신 N개 |
+| `?action=list&type=choice&limit=50` | 유형 필터 + 최신 N개 |
 | `?action=count` | 총 개수 `{ "count": 42 }` — **첫 페이지 카운터가 사용** |
 
 ---
@@ -223,7 +191,6 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 | 클립보드 복사가 안 돼요 | `file://` 사용 시 차단. `python3 -m http.server`로 띄울 것 |
 | 이모지가 캡처에 안 찍혀요 | `html2canvas`는 OS 이모지 폰트 의존 — 시스템 이모지 폰트가 있는 환경에서 캡처 |
 | 만든 사람 칸에 URL 등 이상한 값 자동완성 | 브라우저 자동완성/저장된 항목 정리 (HTML 측 `autocomplete="off"`+고유 `name`은 이미 적용됨) |
-| 관리자 로그인 실패 | `ADMIN_PASSWORD` 스크립트 속성 확인, Apps Script **최신 코드 재배포** |
 
 ---
 
@@ -235,7 +202,7 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 - **질문 로또** 탭 신규
 - 입력값 **자동 저장** + **초기화** 버튼
 - 첫 화면 **전체 카드 카운터**
-- 질문 유형 `공감질문 → 선택질문` (표시 텍스트만, 내부 코드 `empathy` 유지)
+- 질문 유형 `공감질문 → 선택질문` (내부 코드도 `empathy → choice`로 변경)
 - 헤더 타이틀 가운데 정렬, 사용법 5단계 + 자동저장 안내
 
 ---

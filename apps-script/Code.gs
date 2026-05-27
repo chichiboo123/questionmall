@@ -70,10 +70,10 @@ function initSheet() {
 
 function seedSamples() {
   const samples = [
-    ['mind','마음','empathy','선택질문','오늘 가장 행복했던 순간은?','#FFD6E0',''],
+    ['mind','마음','choice','선택질문','오늘 가장 행복했던 순간은?','#FFD6E0',''],
     ['thought','생각','imagine','상상질문','내가 투명인간이 된다면 무엇을 할까?','#D6E5FF',''],
     ['body','몸','exp','경험질문','가장 좋아하는 운동은?','#D6F5D6',''],
-    ['relation','관계','empathy','선택질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2',''],
+    ['relation','관계','choice','선택질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2',''],
   ];
   const sh = ensureSheet();
   samples.forEach(s => {
@@ -133,6 +133,25 @@ function doPost(e) {
 
     if (action === 'admin-list') {
       return json({ ok: true, items: readAll() });
+    }
+
+    if (action === 'admin-create') {
+      if (!data.question) return json({ ok: false, error: 'question required' });
+      const sh = ensureSheet();
+      const id = uuid();
+      sh.appendRow([
+        id,
+        data.timestamp || new Date().toISOString(),
+        data.lang || 'ko',
+        data.category || '',
+        data.categoryLabel || '',
+        data.type || '',
+        data.typeLabel || '',
+        String(data.question).slice(0, 500),
+        data.color || '',
+        String(data.author || '').slice(0, 30),
+      ]);
+      return json({ ok: true, id });
     }
 
     if (action === 'update') {
@@ -216,6 +235,18 @@ function ensureSheet() {
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
     sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  // 헤더 자동 마이그레이션 — 누락된 컬럼을 우측에 추가 (예: 기존 시트에 author 없음)
+  const lastCol = sh.getLastColumn();
+  const cur = lastCol > 0 ? sh.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  let changed = false;
+  HEADERS.forEach((h, i) => {
+    if (cur[i] !== h) { sh.getRange(1, i + 1).setValue(h); changed = true; }
+  });
+  if (changed) {
+    sh.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
     sh.setFrozenRows(1);
   }
   return sh;

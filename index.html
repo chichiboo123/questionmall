@@ -91,7 +91,7 @@
         <div class="form-row">
           <label data-i18n="qType">질문 유형</label>
           <div class="chip-group" id="typeChips">
-            <button class="chip" data-value="empathy"  data-i18n="typeEmpathy">선택질문</button>
+            <button class="chip" data-value="choice"  data-i18n="typeChoice">선택질문</button>
             <button class="chip" data-value="imagine"  data-i18n="typeImagine">상상질문</button>
             <button class="chip" data-value="exp"      data-i18n="typeExp">경험질문</button>
             <button class="chip" data-value="dilemma"  data-i18n="typeDilemma">딜레마질문</button>
@@ -210,7 +210,7 @@
       <div class="form-row">
         <label data-i18n="filterType">질문 유형 (여러 개 선택 가능)</label>
         <div class="chip-group" id="expTypeChips">
-          <button class="chip" data-value="empathy" data-i18n="typeEmpathy">선택질문</button>
+          <button class="chip" data-value="choice" data-i18n="typeChoice">선택질문</button>
           <button class="chip" data-value="imagine" data-i18n="typeImagine">상상질문</button>
           <button class="chip" data-value="exp"     data-i18n="typeExp">경험질문</button>
           <button class="chip" data-value="dilemma" data-i18n="typeDilemma">딜레마질문</button>
@@ -341,12 +341,63 @@
           <option value="relation">관계</option>
           <option value="etc">기타</option>
         </select>
+        <button class="primary-btn small-btn" id="adminAddBtn" data-i18n="adminAdd">+ 새 카드</button>
         <button class="ghost-btn" id="adminReloadBtn" data-i18n="reload">새로고침</button>
         <button class="ghost-btn" id="adminLogoutBtn" data-i18n="logout">로그아웃</button>
       </div>
     </header>
     <div class="admin-stats" id="adminStats"></div>
     <div class="admin-content" id="adminContent"></div>
+  </div>
+
+  <!-- 관리자 — 새 카드 추가 모달 -->
+  <div class="modal" id="adminAddModal" hidden>
+    <div class="modal-inner" style="width:480px">
+      <button class="modal-close" id="adminAddClose" aria-label="close">✕</button>
+      <h3 data-i18n="adminAddTitle">새 질문 카드 추가</h3>
+      <div class="admin-add-form">
+        <label class="aa-label" data-i18n="category">카테고리</label>
+        <select id="aaCategory">
+          <option value="mind">마음</option>
+          <option value="thought">생각</option>
+          <option value="body">몸</option>
+          <option value="relation">관계</option>
+          <option value="etc">기타</option>
+        </select>
+        <input type="text" id="aaCategoryLabel" data-i18n-placeholder="aaCatLabelPh" placeholder="카테고리 라벨 (자동 채움)" />
+
+        <label class="aa-label" data-i18n="qType">질문 유형</label>
+        <select id="aaType">
+          <option value="choice">선택질문</option>
+          <option value="imagine">상상질문</option>
+          <option value="exp">경험질문</option>
+          <option value="dilemma">딜레마질문</option>
+          <option value="etc">기타</option>
+        </select>
+        <input type="text" id="aaTypeLabel" data-i18n-placeholder="aaTypeLabelPh" placeholder="유형 라벨 (자동 채움)" />
+
+        <label class="aa-label" data-i18n="qContent">질문 내용</label>
+        <textarea id="aaQuestion" rows="3" maxlength="500" data-i18n-placeholder="qPlaceholder" placeholder="질문을 입력해 주세요."></textarea>
+
+        <label class="aa-label" data-i18n="author">만든 사람</label>
+        <input type="text" id="aaAuthor" maxlength="30" data-i18n-placeholder="authorPh" placeholder="이름 (선택)" />
+
+        <label class="aa-label" data-i18n="aaLang">언어</label>
+        <select id="aaLang">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+
+        <label class="aa-label" data-i18n="aaColor">카드 색상</label>
+        <input type="text" id="aaColor" placeholder="#FFD6E0" />
+      </div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="ghost-btn"   id="adminAddCancel" data-i18n="cancel">취소</button>
+        <button class="primary-btn" id="adminAddSave"   data-i18n="save">저장</button>
+      </div>
+      <p class="muted small" id="adminAddMsg" style="text-align:center;margin-top:10px"></p>
+    </div>
   </div>
 
   <div class="toast" id="toast" hidden></div>
