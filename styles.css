@@ -747,6 +747,21 @@ h2 { margin-top: 0; text-align: center; }
   border-radius: 16px; padding: 5px 12px; cursor: pointer; font: inherit; font-size: 12px;
 }
 
+/* Admin add modal form */
+.admin-add-form {
+  display: grid; gap: 8px; margin-top: 6px;
+}
+.admin-add-form .aa-label {
+  font-weight: 700; font-size: 13px; margin-top: 6px;
+}
+.admin-add-form select,
+.admin-add-form input[type="text"],
+.admin-add-form textarea {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 8px; font: inherit; box-sizing: border-box;
+}
+.admin-add-form textarea { resize: vertical; }
+
 /* ========== Toast ========== */
 .toast {
   position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);

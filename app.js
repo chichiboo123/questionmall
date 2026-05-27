@@ -260,7 +260,7 @@
   }
   function getTypeLabel() {
     const d = window.I18N[state.lang];
-    const map = { empathy:'typeEmpathy', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
+    const map = { choice:'typeChoice', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
     if (state.qType === 'etc') return state.qTypeEtc || d.typeEtc;
     return d[map[state.qType]] || '';
   }
@@ -514,13 +514,13 @@
   }
 
   const DEMO_DECK = [
-    { category:'mind',     type:'empathy', question:'오늘 가장 행복했던 순간은?',       color: CATEGORY_COLOR.mind },
+    { category:'mind',     type:'choice', question:'오늘 가장 행복했던 순간은?',       color: CATEGORY_COLOR.mind },
     { category:'mind',     type:'exp',     question:'슬펐던 기억을 한 가지 떠올려봐.',   color: CATEGORY_COLOR.mind },
     { category:'thought',  type:'imagine', question:'내가 투명인간이 된다면?',           color: CATEGORY_COLOR.thought },
     { category:'thought',  type:'dilemma', question:'친구와 약속 vs 가족 여행?',          color: CATEGORY_COLOR.thought },
     { category:'body',     type:'exp',     question:'가장 좋아하는 운동은?',              color: CATEGORY_COLOR.body },
-    { category:'body',     type:'empathy', question:'아플 때 누가 옆에 있어주면 좋을까?', color: CATEGORY_COLOR.body },
-    { category:'relation', type:'empathy', question:'친구가 고민 있을 때 뭐라고 할래?',   color: CATEGORY_COLOR.relation },
+    { category:'body',     type:'choice', question:'아플 때 누가 옆에 있어주면 좋을까?', color: CATEGORY_COLOR.body },
+    { category:'relation', type:'choice', question:'친구가 고민 있을 때 뭐라고 할래?',   color: CATEGORY_COLOR.relation },
     { category:'relation', type:'imagine', question:'동물과 말할 수 있다면 누구랑?',      color: CATEGORY_COLOR.relation },
   ];
 
@@ -567,7 +567,7 @@
   }
   function typeLabelFor(value) {
     const d = window.I18N[state.lang];
-    const map = { empathy:'typeEmpathy', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
+    const map = { choice:'typeChoice', imagine:'typeImagine', exp:'typeExp', dilemma:'typeDilemma', etc:'typeEtc' };
     return d[map[value]] || value || '';
   }
   function catEmojiFor(value) { return CATEGORY_EMOJI[value] || '⭐'; }
@@ -684,7 +684,7 @@
   let adminView = 'list';
 
   const CAT_OPTIONS  = ['mind','thought','body','relation','etc'];
-  const TYPE_OPTIONS = ['empathy','imagine','exp','dilemma','etc'];
+  const TYPE_OPTIONS = ['choice','imagine','exp','dilemma','etc'];
 
   $('#adminGate').addEventListener('click', () => {
     $('#adminLockModal').hidden = false;
@@ -721,6 +721,65 @@
   });
 
   $('#adminReloadBtn').addEventListener('click', loadAdminData);
+
+  // ============ Admin: add new card ============
+  const CAT_LABEL_MAP = { mind:'마음', thought:'생각', body:'몸', relation:'관계', etc:'기타' };
+  const TYPE_LABEL_MAP = { choice:'선택질문', imagine:'상상질문', exp:'경험질문', dilemma:'딜레마질문', etc:'기타' };
+  const CAT_COLOR_MAP = { mind:'#FFD6E0', thought:'#D6E5FF', body:'#D6F5D6', relation:'#FFF4C2', etc:'#E5D6FF' };
+
+  function fillAddDefaults() {
+    const cat = $('#aaCategory').value;
+    const type = $('#aaType').value;
+    $('#aaCategoryLabel').value = CAT_LABEL_MAP[cat] || '';
+    $('#aaTypeLabel').value     = TYPE_LABEL_MAP[type] || '';
+    $('#aaColor').value         = CAT_COLOR_MAP[cat] || '#FFD6E0';
+  }
+  $('#adminAddBtn').addEventListener('click', () => {
+    $('#aaCategory').value = 'mind';
+    $('#aaType').value = 'choice';
+    $('#aaQuestion').value = '';
+    $('#aaAuthor').value = '';
+    $('#aaLang').value = state.lang;
+    fillAddDefaults();
+    $('#adminAddMsg').textContent = '';
+    $('#adminAddModal').hidden = false;
+    setTimeout(() => $('#aaQuestion').focus(), 50);
+  });
+  $('#adminAddClose').addEventListener('click',  () => { $('#adminAddModal').hidden = true; });
+  $('#adminAddCancel').addEventListener('click', () => { $('#adminAddModal').hidden = true; });
+  $('#aaCategory').addEventListener('change', fillAddDefaults);
+  $('#aaType').addEventListener('change', fillAddDefaults);
+
+  $('#adminAddSave').addEventListener('click', async () => {
+    const question = $('#aaQuestion').value.trim();
+    if (!question) { $('#adminAddMsg').textContent = t('toastNeedQ'); return; }
+    const payload = {
+      action: 'admin-create',
+      password: adminPw,
+      timestamp: new Date().toISOString(),
+      lang: $('#aaLang').value,
+      category: $('#aaCategory').value,
+      categoryLabel: $('#aaCategoryLabel').value.trim() || (CAT_LABEL_MAP[$('#aaCategory').value] || ''),
+      type: $('#aaType').value,
+      typeLabel: $('#aaTypeLabel').value.trim() || (TYPE_LABEL_MAP[$('#aaType').value] || ''),
+      question,
+      color: $('#aaColor').value.trim() || (CAT_COLOR_MAP[$('#aaCategory').value] || '#FFD6E0'),
+      author: $('#aaAuthor').value.trim(),
+    };
+    try {
+      const r = await postToScript(payload);
+      if (!r.ok) throw new Error(r.error || 'fail');
+      $('#adminAddModal').hidden = true;
+      showToast(t('saved'));
+      state.deck = null;
+      refreshCardCount();
+      await loadAdminData();
+    } catch (e) {
+      console.error(e);
+      $('#adminAddMsg').textContent = t('saveFail');
+    }
+  });
+
   $('#adminSearch').addEventListener('input', renderAdmin);
   $('#adminFilterCat').addEventListener('change', renderAdmin);
 
