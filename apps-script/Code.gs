@@ -25,9 +25,9 @@ const HEADERS = [
   'id', 'timestamp', 'lang',
   'category', 'categoryLabel',
   'type', 'typeLabel',
-  'question', 'color',
+  'question', 'color', 'author',
 ];
-const EDITABLE = ['lang', 'category', 'categoryLabel', 'type', 'typeLabel', 'question', 'color'];
+const EDITABLE = ['lang', 'category', 'categoryLabel', 'type', 'typeLabel', 'question', 'color', 'author'];
 
 /** ────────────── Menu + 자동 초기화 ────────────── */
 
@@ -63,21 +63,21 @@ function initSheet() {
   sh.clear();
   sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
   sh.setFrozenRows(1);
-  const widths = [120, 170, 60, 90, 110, 90, 110, 360, 90];
+  const widths = [120, 170, 60, 90, 110, 90, 110, 360, 90, 110];
   widths.forEach((w, i) => sh.setColumnWidth(i + 1, w));
   SpreadsheetApp.getActive().toast('시트 초기화 완료', 'QuestionMall');
 }
 
 function seedSamples() {
   const samples = [
-    ['mind','마음','empathy','공감질문','오늘 가장 행복했던 순간은?','#FFD6E0'],
-    ['thought','생각','imagine','상상질문','내가 투명인간이 된다면 무엇을 할까?','#D6E5FF'],
-    ['body','몸','exp','경험질문','가장 좋아하는 운동은?','#D6F5D6'],
-    ['relation','관계','empathy','공감질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2'],
+    ['mind','마음','empathy','공감질문','오늘 가장 행복했던 순간은?','#FFD6E0',''],
+    ['thought','생각','imagine','상상질문','내가 투명인간이 된다면 무엇을 할까?','#D6E5FF',''],
+    ['body','몸','exp','경험질문','가장 좋아하는 운동은?','#D6F5D6',''],
+    ['relation','관계','empathy','공감질문','친구가 슬퍼할 때 어떻게 위로해줄까?','#FFF4C2',''],
   ];
   const sh = ensureSheet();
   samples.forEach(s => {
-    sh.appendRow([uuid(), new Date().toISOString(), 'ko', s[0], s[1], s[2], s[3], s[4], s[5]]);
+    sh.appendRow([uuid(), new Date().toISOString(), 'ko', s[0], s[1], s[2], s[3], s[4], s[5], s[6]]);
   });
 }
 
@@ -118,6 +118,7 @@ function doPost(e) {
         data.typeLabel || '',
         String(data.question).slice(0, 500),
         data.color || '',
+        String(data.author || '').slice(0, 30),
       ]);
       return json({ ok: true, id });
     }
