@@ -516,8 +516,9 @@ h2 {
 
 .draw-grid {
   display: grid; gap: 18px;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 220px));
   margin-top: 24px;
+  justify-content: center;
   justify-items: center;
 }
 .draw-card {
@@ -624,7 +625,7 @@ h2 {
 }
 
 /* ===== Lotto view ===== */
-.lotto-desc { text-align: center; margin-top: -4px; margin-bottom: 22px; font-size: 15px; font-weight: 600; }
+.lotto-desc { text-align: center; margin-top: 4px; margin-bottom: 22px; font-size: 15px; font-weight: 600; }
 .lotto-stage {
   display: flex; justify-content: center; align-items: center;
   min-height: 380px;
@@ -822,8 +823,8 @@ h2 {
 .modal-close:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
 .help-modal-inner { max-width: 520px; }
 .help-modal-inner h3 {
-  text-align: left;
-  margin-bottom: 14px;
+  text-align: center;
+  margin-bottom: 18px;
   padding-right: 40px;
 }
 
@@ -831,8 +832,8 @@ h2 {
   background: rgba(255,255,255,.55);
   border: 1.5px solid var(--line);
   border-radius: 16px;
-  padding: 16px 18px;
-  margin: 14px 0;
+  padding: 18px 20px;
+  margin: 12px 0;
   text-align: left;
 }
 .help-section.help-maker    { background: rgba(255,214,224,.32); border-color: rgba(255,128,150,.28); }
@@ -844,36 +845,37 @@ h2 {
   font-size: 17px; font-weight: 700; color: var(--ink);
 }
 .help-section-title .help-icon { font-size: 20px; line-height: 1; }
-.help-list { padding-left: 24px; line-height: 1.78; margin: 6px 0 2px; }
+.help-list { padding-left: 20px; line-height: 1.9; margin: 8px 0 2px; }
 .help-list li {
   padding-left: 4px;
-  font-size: 15.5px;
+  font-size: 15px;
   color: var(--ink);
   text-align: left;
   word-break: keep-all;
+  margin-bottom: 4px;
 }
 .help-list li::marker { color: var(--accent); font-weight: 800; }
 .help-desc {
   margin: 0;
-  font-size: 15.5px;
-  line-height: 1.75;
+  font-size: 15px;
+  line-height: 1.85;
   color: var(--ink);
   text-align: left;
   word-break: keep-all;
 }
 .help-tips {
-  margin-top: 14px; padding: 12px 14px;
+  margin-top: 14px; padding: 14px 16px;
   background: rgba(255,244,194,.45);
   border: 1.5px dashed rgba(220,180,60,.4);
   border-radius: 14px;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 8px;
   text-align: left;
 }
 .help-tips p {
   margin: 0;
-  font-size: 14.5px;
+  font-size: 14px;
   color: var(--ink-2);
-  line-height: 1.7;
+  line-height: 1.75;
   text-align: left;
   word-break: keep-all;
 }
@@ -1192,7 +1194,7 @@ h2 {
   .chip .chip-emoji { font-size: 14px; }
 
   .draw-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 220px));
     gap: 12px;
   }
   .draw-card { max-width: none; }
