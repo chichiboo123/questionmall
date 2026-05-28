@@ -821,8 +821,7 @@ h2 {
   transition: background .15s ease, transform .14s var(--bounce);
 }
 .modal-close:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
-.help-modal-inner { max-width: 520px; }
-.help-modal-inner p { text-align: left; }
+.help-modal-inner { width: 580px; max-width: 92vw; }
 .help-modal-inner h3 {
   text-align: center;
   margin-bottom: 18px;
@@ -856,7 +855,7 @@ h2 {
   margin-bottom: 4px;
 }
 .help-list li::marker { color: var(--accent); font-weight: 800; }
-.help-desc {
+.help-section .help-desc {
   margin: 0;
   font-size: 15px;
   line-height: 1.85;
