@@ -6,6 +6,8 @@
   const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx_4o3UiJRXAwhOCeG3U7RNLkIEjfb3JXfA1vm0ec1GU7K_QcggXiXLApo8Viws8Uu8/exec';
 
   const LS_KEY = 'questionmall.maker.v1';
+  const DECK_CACHE_KEY = 'questionmall.deck.v1';
+  const DECK_CACHE_TTL_MS = 10 * 60 * 1000; // 10분
 
   // ============ State ============
   const state = {
@@ -484,6 +486,7 @@
     try {
       await postToScript({ action: 'create', ...payload });
       state.deck = null;
+      try { localStorage.removeItem(DECK_CACHE_KEY); } catch { /* 무시 */ }
       showToast(t('toastShared'));
       refreshCardCount();
     } catch (err) { console.error(err); showToast(t('toastShareFail')); }
@@ -514,12 +517,21 @@
       el.textContent = String(DEMO_DECK.length);
       return;
     }
+    // 캐시된 덱 데이터로 즉시 표시
+    try {
+      const raw = localStorage.getItem(DECK_CACHE_KEY);
+      if (raw) {
+        const { data } = JSON.parse(raw);
+        if (Array.isArray(data) && data.length > 0) el.textContent = String(data.length);
+      }
+    } catch { /* 무시 */ }
+    // 서버에서 최신 카운트 업데이트
     try {
       const res = await fetch(SHEETS_WEBAPP_URL + '?action=count');
       const data = await res.json();
       el.textContent = String(typeof data.count === 'number' ? data.count : '—');
     } catch {
-      el.textContent = '—';
+      if (!el.textContent) el.textContent = '—';
     }
   }
 
@@ -609,18 +621,47 @@
     return chips.map(c => c.dataset.value);
   }
 
+  async function _fetchDeckFromNetwork() {
+    const res = await fetch(SHEETS_WEBAPP_URL + '?action=list');
+    const data = await res.json();
+    const deck = Array.isArray(data) ? data : (data.items || []);
+    state.deck = deck;
+    try {
+      localStorage.setItem(DECK_CACHE_KEY, JSON.stringify({ data: deck, ts: Date.now() }));
+    } catch { /* localStorage 용량 초과 등 무시 */ }
+    return deck;
+  }
+
   async function fetchDeck() {
+    // 1. 메모리 캐시 (가장 빠름)
     if (state.deck) return state.deck;
+
+    // 2. localStorage 캐시 확인
+    if (SHEETS_WEBAPP_URL) {
+      try {
+        const raw = localStorage.getItem(DECK_CACHE_KEY);
+        if (raw) {
+          const { data, ts } = JSON.parse(raw);
+          if (Array.isArray(data) && data.length > 0) {
+            state.deck = data;
+            // 캐시가 만료된 경우 백그라운드에서 갱신
+            if (Date.now() - ts >= DECK_CACHE_TTL_MS) {
+              _fetchDeckFromNetwork().catch(() => {});
+            }
+            return state.deck;
+          }
+        }
+      } catch { /* 무시 */ }
+    }
+
+    // 3. 네트워크에서 로드
     if (!SHEETS_WEBAPP_URL) {
       console.warn('SHEETS_WEBAPP_URL 미설정 → 데모 데이터 사용');
       state.deck = DEMO_DECK.slice();
       return state.deck;
     }
     try {
-      const res = await fetch(SHEETS_WEBAPP_URL + '?action=list');
-      const data = await res.json();
-      state.deck = Array.isArray(data) ? data : (data.items || []);
-      return state.deck;
+      return await _fetchDeckFromNetwork();
     } catch (e) {
       console.error('fetch deck fail, using demo', e);
       state.deck = DEMO_DECK.slice();
@@ -1225,4 +1266,5 @@
   renderRecentEmojis();
   loadLocal();
   refreshCardCount();
+  if (SHEETS_WEBAPP_URL) fetchDeck(); // 뽑기 클릭 전에 미리 데이터 로드
 })();
