@@ -821,12 +821,18 @@ h2 {
 }
 .modal-close:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
 .help-modal-inner { max-width: 520px; }
+.help-modal-inner h3 {
+  text-align: left;
+  margin-bottom: 14px;
+  padding-right: 40px;
+}
+
 .help-section {
   background: rgba(255,255,255,.55);
   border: 1.5px solid var(--line);
   border-radius: 16px;
-  padding: 14px 16px;
-  margin: 12px 0;
+  padding: 16px 18px;
+  margin: 14px 0;
   text-align: left;
 }
 .help-section.help-maker    { background: rgba(255,214,224,.32); border-color: rgba(255,128,150,.28); }
@@ -838,10 +844,23 @@ h2 {
   font-size: 17px; font-weight: 700; color: var(--ink);
 }
 .help-section-title .help-icon { font-size: 20px; line-height: 1; }
-.help-list { padding-left: 22px; line-height: 1.7; margin: 4px 0 2px; }
-.help-list li { padding-left: 4px; font-size: 14.5px; color: var(--ink); }
+.help-list { padding-left: 24px; line-height: 1.78; margin: 6px 0 2px; }
+.help-list li {
+  padding-left: 4px;
+  font-size: 15.5px;
+  color: var(--ink);
+  text-align: left;
+  word-break: keep-all;
+}
 .help-list li::marker { color: var(--accent); font-weight: 800; }
-.help-desc { margin: 0; font-size: 14.5px; line-height: 1.65; color: var(--ink); }
+.help-desc {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--ink);
+  text-align: left;
+  word-break: keep-all;
+}
 .help-tips {
   margin-top: 14px; padding: 12px 14px;
   background: rgba(255,244,194,.45);
@@ -850,7 +869,14 @@ h2 {
   display: flex; flex-direction: column; gap: 6px;
   text-align: left;
 }
-.help-tips p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+.help-tips p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+  text-align: left;
+  word-break: keep-all;
+}
 .export-row { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
 
 /* ===== Share confirmation modal ===== */
