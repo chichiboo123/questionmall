@@ -4,10 +4,21 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>질문 다있소 — 소개 카드뉴스</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet" />
 <style>
+  @font-face {
+    font-family: 'Pretendard GOV';
+    src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/PretendardGOV-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Pretendard GOV';
+    src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/PretendardGOV-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
   :root {
     --pink:   #FFD6E0;
     --blue:   #D6E5FF;
@@ -27,7 +38,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Pretendard GOV', sans-serif;
     color: var(--ink);
     background:
       radial-gradient(circle at 10% 10%, rgba(255,214,224,.55) 0, transparent 40%),
@@ -53,7 +64,7 @@
   }
   .hero h1 {
     margin: 14px 0 8px;
-    font-family: 'Black Han Sans', sans-serif;
+    font-family: 'Pretendard GOV', sans-serif;
     font-size: clamp(36px, 6vw, 56px);
     letter-spacing: 1px;
     background: linear-gradient(110deg, var(--accent) 0%, #ff8aa3 35%, var(--accent-2) 100%);
@@ -68,14 +79,14 @@
     display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center;
     margin-top: 8px;
   }
-  .hero-cta a {
+  .hero-cta a, .hero-cta span {
     text-decoration: none; padding: 10px 18px; border-radius: 999px;
     font-weight: 700; font-size: 14px;
     border: 2px solid var(--line); background: #fff; color: var(--ink);
     transition: transform .14s ease, box-shadow .14s ease;
   }
-  .hero-cta a.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .hero-cta a:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+  .hero-cta a.primary, .hero-cta span.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .hero-cta a:hover, .hero-cta span:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
 
   /* Card grid */
   .grid {
@@ -99,7 +110,7 @@
   }
   .news-card .num {
     position: absolute; top: 14px; right: 18px;
-    font-family: 'Black Han Sans', sans-serif;
+    font-family: 'Pretendard GOV', sans-serif;
     font-size: 56px; line-height: 1;
     color: rgba(0,0,0,.06);
     pointer-events: none;
@@ -164,7 +175,7 @@
     transform: rotate(-3deg);
   }
   .mini-card::before, .mini-card::after {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'Pretendard GOV', sans-serif;
     font-size: 56px; line-height: 1;
     color: rgba(0,0,0,.28); font-weight: 700;
     position: absolute;
@@ -181,6 +192,7 @@
 
   /* Final credit */
   .credit-link {
+    display: inline-block;
     color: var(--accent); text-decoration: none; font-weight: 700;
     border-bottom: 2px dotted var(--accent);
   }
@@ -203,8 +215,8 @@
         만들고(Maker), 떠나고(Quest), 뽑아요(Lotto).
       </p>
       <div class="hero-cta">
-        <a class="primary" href="./index.html">바로 시작하기 →</a>
-        <a href="https://litt.ly/chichiboo" target="_blank" rel="noopener">치수쌤 소개</a>
+        <span class="primary">바로 시작하기</span>
+        <span>치수쌤 소개</span>
       </div>
       <div class="mini-card" aria-hidden="true">
         <div class="mq">오늘 가장<br/>행복했던 순간은?</div>
@@ -345,8 +357,8 @@
           교육뮤지컬 <b>꿈꾸는 치수쌤</b>이 만든 어린이용 질문 카드 웹앱.
         </p>
         <div class="hero-cta">
-          <a class="primary" href="./index.html">웹앱 열기 →</a>
-          <a class="credit-link" href="https://litt.ly/chichiboo" target="_blank" rel="noopener">litt.ly/chichiboo</a>
+          <span class="primary">웹앱 열기</span>
+          <span class="credit-link">소개 링크 비공개</span>
         </div>
       </article>
 
