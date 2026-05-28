@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>질문 다있소 — 소개 카드뉴스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --pink:   #FFD6E0;
+    --blue:   #D6E5FF;
+    --green:  #D6F5D6;
+    --yellow: #FFF4C2;
+    --purple: #E5D6FF;
+    --peach:  #FFE0C2;
+    --mint:   #C2F0F0;
+    --bg:     #FFF8F0;
+    --ink:    #2c2c2c;
+    --ink-2:  #555;
+    --muted:  #888;
+    --line:   #ececec;
+    --accent: #ff6b8a;
+    --accent-2: #6e96d2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 10% 10%, rgba(255,214,224,.55) 0, transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(214,229,255,.55) 0, transparent 42%),
+      radial-gradient(circle at 50% 95%, rgba(214,245,214,.5) 0, transparent 50%),
+      var(--bg);
+    min-height: 100vh;
+    padding: 48px 16px 80px;
+  }
+  .stage {
+    max-width: 1120px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 28px;
+  }
+  .hero {
+    text-align: center; padding: 36px 24px 24px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 999px;
+    background: #fff; border: 1.5px solid var(--line);
+    font-size: 13px; font-weight: 600; color: var(--ink-2);
+    box-shadow: 0 2px 0 rgba(0,0,0,.04);
+  }
+  .hero h1 {
+    margin: 14px 0 8px;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: clamp(36px, 6vw, 56px);
+    letter-spacing: 1px;
+    background: linear-gradient(110deg, var(--accent) 0%, #ff8aa3 35%, var(--accent-2) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .hero .tagline {
+    margin: 0 auto 18px; max-width: 560px;
+    color: var(--ink-2); font-size: 17px; line-height: 1.6;
+  }
+  .hero-cta {
+    display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    margin-top: 8px;
+  }
+  .hero-cta a {
+    text-decoration: none; padding: 10px 18px; border-radius: 999px;
+    font-weight: 700; font-size: 14px;
+    border: 2px solid var(--line); background: #fff; color: var(--ink);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .hero-cta a.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .hero-cta a:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+
+  /* Card grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px;
+  }
+  .news-card {
+    position: relative; overflow: hidden;
+    border-radius: 22px;
+    padding: 26px 24px;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    box-shadow: 0 8px 24px rgba(0,0,0,.04);
+    display: flex; flex-direction: column; gap: 12px;
+    min-height: 280px;
+  }
+  .news-card.span-2 { grid-column: span 2; }
+  @media (max-width: 720px) {
+    .news-card.span-2 { grid-column: span 1; }
+  }
+  .news-card .num {
+    position: absolute; top: 14px; right: 18px;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 56px; line-height: 1;
+    color: rgba(0,0,0,.06);
+    pointer-events: none;
+  }
+  .news-card .icon {
+    width: 56px; height: 56px; border-radius: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    background: rgba(255,255,255,.7);
+    border: 1.5px solid var(--line);
+    box-shadow: 0 4px 0 rgba(0,0,0,.04);
+  }
+  .news-card h2 {
+    margin: 4px 0 0;
+    font-size: 22px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .news-card .desc {
+    margin: 0;
+    color: var(--ink-2);
+    line-height: 1.65; font-size: 15px;
+  }
+  .news-card ul.bullets {
+    list-style: none; padding: 0; margin: 6px 0 0;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .news-card ul.bullets li {
+    position: relative; padding-left: 22px;
+    font-size: 14.5px; color: var(--ink-2); line-height: 1.55;
+  }
+  .news-card ul.bullets li::before {
+    content: '✿'; position: absolute; left: 0; top: 0;
+    color: var(--accent);
+  }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .tag {
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    background: rgba(255,214,224,.5); color: #b94d6e;
+    border: 1px solid rgba(255,214,224,.9);
+  }
+
+  /* Pastel variants per card */
+  .news-card.c-intro    { background: linear-gradient(135deg, #fff 0%, var(--pink) 200%); }
+  .news-card.c-maker    { background: linear-gradient(135deg, #fff 0%, var(--pink) 220%); }
+  .news-card.c-explorer { background: linear-gradient(135deg, #fff 0%, var(--blue) 220%); }
+  .news-card.c-lotto    { background: linear-gradient(135deg, #fff 0%, var(--purple) 220%); }
+  .news-card.c-i18n     { background: linear-gradient(135deg, #fff 0%, var(--mint) 220%); }
+  .news-card.c-emoji    { background: linear-gradient(135deg, #fff 0%, var(--peach) 220%); }
+  .news-card.c-share    { background: linear-gradient(135deg, #fff 0%, var(--yellow) 220%); }
+  .news-card.c-tech     { background: linear-gradient(135deg, #fff 0%, var(--green) 220%); }
+  .news-card.c-credit   { background: linear-gradient(135deg, #fff 0%, var(--purple) 220%); text-align: center; align-items: center; }
+
+  /* Mini sample card (for hero) */
+  .mini-card {
+    width: 200px; height: 280px;
+    margin: 18px auto 0;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--pink) 0%, var(--peach) 100%);
+    position: relative; box-shadow: 0 14px 30px rgba(0,0,0,.10);
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px;
+    transform: rotate(-3deg);
+  }
+  .mini-card::before, .mini-card::after {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 56px; line-height: 1;
+    color: rgba(0,0,0,.28); font-weight: 700;
+    position: absolute;
+  }
+  .mini-card::before { content: '\201C'; top: 6px; left: 10px; }
+  .mini-card::after  { content: '\201D'; bottom: -10px; right: 12px; }
+  .mini-card .mq {
+    font-weight: 700; font-size: 17px; line-height: 1.5;
+    text-align: center; color: var(--ink);
+  }
+  .mini-card .mb {
+    position: absolute; bottom: 10px; left: 12px; font-size: 22px;
+  }
+
+  /* Final credit */
+  .credit-link {
+    color: var(--accent); text-decoration: none; font-weight: 700;
+    border-bottom: 2px dotted var(--accent);
+  }
+
+  footer {
+    text-align: center; color: var(--muted); font-size: 13px;
+    padding-top: 8px;
+  }
+</style>
+</head>
+<body>
+  <main class="stage">
+
+    <!-- Hero -->
+    <section class="hero">
+      <span class="badge">📚 어린이 · 교실 · 가족을 위한 질문 카드 웹앱</span>
+      <h1>질문 다있소</h1>
+      <p class="tagline">
+        아이들의 호기심을 카드로 모으고, 함께 꺼내 이야기 나누는 <b>3-in-1 질문 놀이터</b>.
+        만들고(Maker), 떠나고(Quest), 뽑아요(Lotto).
+      </p>
+      <div class="hero-cta">
+        <a class="primary" href="./index.html">바로 시작하기 →</a>
+        <a href="https://litt.ly/chichiboo" target="_blank" rel="noopener">치수쌤 소개</a>
+      </div>
+      <div class="mini-card" aria-hidden="true">
+        <div class="mq">오늘 가장<br/>행복했던 순간은?</div>
+        <div class="mb">🌷</div>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="grid">
+
+      <article class="news-card c-intro span-2">
+        <span class="num">01</span>
+        <span class="icon">💡</span>
+        <h2>왜 ‘질문 다있소’인가요?</h2>
+        <p class="desc">
+          좋은 답보다 좋은 <b>질문</b>이 어린이의 세계를 넓혀줍니다.
+          ‘질문 다있소’는 아이들이 직접 만든 질문을 카드로 모아,
+          교실·가정·동아리에서 누구나 꺼내 이야기할 수 있게 해주는 작은 도구예요.
+        </p>
+        <div class="tag-row">
+          <span class="tag">초등 교실</span>
+          <span class="tag">가족 대화</span>
+          <span class="tag">상담 · 동아리</span>
+          <span class="tag">3개 언어</span>
+        </div>
+      </article>
+
+      <article class="news-card c-maker">
+        <span class="num">02</span>
+        <span class="icon">🛠</span>
+        <h2>질문 제작소</h2>
+        <p class="desc">
+          카테고리·유형·색깔·이모지까지 골라 나만의 카드 한 장을 완성해요.
+        </p>
+        <ul class="bullets">
+          <li>마음 · 생각 · 몸 · 관계 · 기타</li>
+          <li>736개 이모지 + 직접 입력</li>
+          <li>입력 자동 저장 · 초기화 버튼</li>
+          <li>JPG 저장 / 클립보드 복사</li>
+        </ul>
+      </article>
+
+      <article class="news-card c-explorer">
+        <span class="num">03</span>
+        <span class="icon">🧭</span>
+        <h2>질문 탐험대</h2>
+        <p class="desc">
+          오늘 하고 싶은 주제를 골라, 한 번에 여러 장을 무작위로 뽑아 책상에 펼쳐 봐요.
+        </p>
+        <ul class="bullets">
+          <li>카테고리 · 유형 다중 필터</li>
+          <li>1~30장 한꺼번에 뽑기</li>
+          <li>‘모두 뒤집기’로 동시 공개</li>
+        </ul>
+      </article>
+
+      <article class="news-card c-lotto">
+        <span class="num">04</span>
+        <span class="icon">🎰</span>
+        <h2>질문 로또</h2>
+        <p class="desc">
+          한 명씩 돌아가며 단 한 장의 질문을 만나는 ‘오늘의 질문’ 타임.
+        </p>
+        <ul class="bullets">
+          <li>버튼 한 번에 무작위 1장</li>
+          <li>연속 중복 자동 방지</li>
+          <li>카드 클릭 → 앞·뒷면 플립</li>
+        </ul>
+      </article>
+
+      <article class="news-card c-emoji">
+        <span class="num">05</span>
+        <span class="icon">🎨</span>
+        <h2>꾸미는 즐거움</h2>
+        <p class="desc">
+          8개 팩 · 736개 이모지 · 최근 사용 16칸 · 직접 입력까지.
+          카드 한 장이 곧 어린이의 작은 작품이 됩니다.
+        </p>
+        <ul class="bullets">
+          <li>표정 / 손짓 / 자연 / 음식 / 동물 / 활동 / 사물 / 기호</li>
+          <li>7색 파스텔 팔레트</li>
+          <li>세리프 따옴표가 만드는 ‘책 같은’ 카드</li>
+        </ul>
+      </article>
+
+      <article class="news-card c-i18n span-2">
+        <span class="num">06</span>
+        <span class="icon">🌐</span>
+        <h2>3개 언어, 자동 번역</h2>
+        <p class="desc">
+          한국어로 만든 카드를 영어 · 일본어로 바꿔도 그대로 읽혀요.
+          UI는 i18n 사전으로, 카드 본문·라벨은 구글 스프레드시트의
+          <b>GOOGLETRANSLATE</b> 수식으로 자동 번역돼 시트가 캐시와 갱신을 처리합니다.
+        </p>
+        <div class="tag-row">
+          <span class="tag">한국어</span>
+          <span class="tag">English</span>
+          <span class="tag">日本語</span>
+          <span class="tag">실시간 전환</span>
+        </div>
+      </article>
+
+      <article class="news-card c-share">
+        <span class="num">07</span>
+        <span class="icon">💖</span>
+        <h2>공유 전 한 번 더</h2>
+        <p class="desc">
+          공유하기 버튼을 누르면 어린이 친화 안내 모달이 한 번 더 떠요.
+        </p>
+        <ul class="bullets">
+          <li>공유 후엔 수정·삭제할 수 없어요</li>
+          <li>맞춤법은 한 번 더 살펴보기</li>
+          <li>친구의 마음을 다치게 하는 말이 없는지 확인</li>
+        </ul>
+      </article>
+
+      <article class="news-card c-tech">
+        <span class="num">08</span>
+        <span class="icon">⚙️</span>
+        <h2>가볍게, 정적으로</h2>
+        <p class="desc">
+          서버나 빌드 도구 없이 HTML · CSS · JS 정적 파일 + 구글 시트만으로 동작해요.
+          학교·가정 환경에서도 무리 없이 켤 수 있는 가벼움.
+        </p>
+        <ul class="bullets">
+          <li>HTML / CSS / JS (의존성 단 한 개: html2canvas)</li>
+          <li>Google Apps Script Web App 백엔드</li>
+          <li>localStorage 자동 저장</li>
+        </ul>
+      </article>
+
+      <article class="news-card c-credit span-2">
+        <span class="num">09</span>
+        <span class="icon">🌷</span>
+        <h2>지금 바로 만나보세요</h2>
+        <p class="desc">
+          질문은 나의 세계 — 아이들이 던지는 작은 질문이 교실의 시작이 됩니다.<br/>
+          교육뮤지컬 <b>꿈꾸는 치수쌤</b>이 만든 어린이용 질문 카드 웹앱.
+        </p>
+        <div class="hero-cta">
+          <a class="primary" href="./index.html">웹앱 열기 →</a>
+          <a class="credit-link" href="https://litt.ly/chichiboo" target="_blank" rel="noopener">litt.ly/chichiboo</a>
+        </div>
+      </article>
+
+    </section>
+
+    <footer>© 질문 다있소 · Question Mall — Created by 꿈꾸는 치수쌤</footer>
+  </main>
+</body>
+</html>

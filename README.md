@@ -10,6 +10,7 @@
 [기능 한눈에 보기](#-기능-한눈에-보기) ·
 [로컬 실행](#-로컬-실행) ·
 [스프레드시트 연동](#-구글-스프레드시트-연동) ·
+[자동 번역](#-자동-번역-googletranslate) ·
 [자동 저장](#-자동-저장-localstorage) ·
 [시트 스펙](#-시트-컬럼-스펙-cards-시트) ·
 [디자인 토큰](#-디자인-토큰) ·
@@ -21,7 +22,7 @@
 
 | 탭 | 무엇을 해요 | 핵심 |
 |---|---|---|
-| 🛠 **질문 제작소** | 카드 1장 만들기 · 꾸미기 · 저장 · 내보내기 | 카드 카운터 · 자동 저장 · 초기화 · 이모지 한 개 |
+| 🛠 **질문 제작소** | 카드 1장 만들기 · 꾸미기 · 저장 · 내보내기 | 카드 카운터 · 자동 저장 · 공유 전 확인 · 736개 이모지 |
 | 🧭 **질문 탐험대** | 조건 필터로 1–30장 무작위 뽑기 | 카테고리/유형 다중 선택 · 모두 뒤집기 |
 | 🎰 **질문 로또** | 무작위 한 장만 등장, 다시 뽑기 | 연속 중복 방지 · 등장 애니메이션 · 클릭 플립 |
 
@@ -34,12 +35,16 @@
 - **초기화 버튼**: 모달 확인 후 입력값과 `localStorage`를 한 번에 깨끗이 비움
 - **카드 디자인** (63 × 88 mm / 260 × 360 px)
   - 앞면 상단: 카테고리 배지 + 질문 유형 배지 (글래스모피즘)
-  - 앞면 본문: 큼직한 **세리프 따옴표 “ ”** 사이에 질문 표시
+  - 앞면 본문: 큼직한 **세리프 따옴표 “ ”** 사이에 질문 표시 (`overflow-wrap: anywhere`로 한·영·일 자동 줄바꿈)
   - 앞면 좌측 하단: 사용자가 고른 **이모지 한 개** (선택 시 즉시 반영)
   - 뒷면: 워터컬러 스플래시 · **질문카드** · *질문은 나의 세계*
-- **이모지 픽커**: 6개 팩(표정/손짓/자연/음식/동물/기호) · 클릭 한 번에 삽입 · "이모지 제거"
+- **이모지 픽커** (총 736개)
+  - 8개 팩: 표정 / 손짓 / 자연 / 음식 / 동물 / 활동 / 사물 / 기호
+  - 스크롤 가능한 그리드 + **최근 사용 16개** 별도 행
+  - 직접 입력해서 임의 이모지 적용 ("내 이모지 넣기")
+- **공유 전 확인 모달**: 어린이용 안내 — *공유 후 수정/삭제 불가, 맞춤법 점검, 친구 마음을 다치게 하는 말 점검*. 확인을 눌러야 실제로 저장됨.
 - **공유하기**: 구글 스프레드시트로 저장 (→ 전체 카드 카운트·탐험대·로또 풀에 반영)
-- **내보내기**: 앞/뒷면 JPG 다운로드 또는 클립보드 복사 (`html2canvas`)
+- **내보내기**: 앞/뒷면 JPG 다운로드 또는 클립보드 복사 (`html2canvas`) — 카드 배경의 다크 그라데이션을 제거해 파스텔 톤이 그대로 살아 있음
 
 ### 🧭 질문 탐험대
 카테고리/유형 다중 선택 + '전체' 토글 · 1–30장 무작위 뽑기 · '모두 뒤집기' · 풀이 부족하면 안내 모달.
@@ -47,9 +52,10 @@
 ### 🎰 질문 로또
 버튼 한 번에 무작위 1장 등장 · **다시 뽑기**로 계속 갱신 · 같은 카드가 연속해서 두 번 나오지 않게 보정 · 카드 클릭 시 앞·뒷면 플립.
 
-### 🌐 다국어
-한국어 / English / 日本語 (우측 상단 드롭다운) — 로또·초기화 모달·카운터·토스트 등 **모든 기능 3개 언어 지원**.
-폰트: 본문 Noto Sans KR/JP/EN, 타이틀 **Black Han Sans**, 따옴표 **Noto Serif KR**.
+### 🌐 다국어 + 자동 번역
+한국어 / English / 日本語 (우측 상단 드롭다운) — UI는 i18n 사전, **카드 본문/카테고리/유형 라벨은 시트의 `GOOGLETRANSLATE` 수식으로 자동 번역**. 한국어로 입력한 카드를 영어 모드로 바꾸면 영어 번역이 실시간 적용됩니다.
+
+폰트: 본문 Noto Sans KR/JP/EN, 따옴표 **Noto Serif KR**. (타이틀은 가독성을 위해 Black Han Sans 대신 Noto Sans 일반 굵기를 사용)
 
 ---
 
@@ -57,12 +63,12 @@
 
 ```
 questionmall/
-├── index.html        # 마크업 (탭: 제작소 · 탐험대 · 로또)
+├── index.html        # 마크업 (탭: 제작소 · 탐험대 · 로또 + 사용법/공유 확인/내보내기 모달)
 ├── styles.css        # 디자인 시스템 + 컴포넌트 스타일
-├── i18n.js           # 다국어 사전 (ko/en/ja)
-├── app.js            # 상태 / 렌더링 / 이벤트 / localStorage / Sheets 통신
+├── i18n.js           # 다국어 사전 (ko/en/ja) — UI 라벨 전부
+├── app.js            # 상태 / 렌더링 / 이벤트 / localStorage / Sheets 통신 / 이모지 픽커
 └── apps-script/
-    └── Code.gs       # 구글 스프레드시트 백엔드
+    └── Code.gs       # 구글 스프레드시트 백엔드 + GOOGLETRANSLATE 자동 채움
 ```
 
 외부 의존성 (CDN): `html2canvas 1.4.1`, Google Fonts (Black Han Sans · Noto Sans/KR/JP · Noto Serif KR)
@@ -89,8 +95,9 @@ python3 -m http.server 5500
 1. 새 Google Sheets 생성 → **확장 프로그램 → Apps Script**
 2. `apps-script/Code.gs` 내용을 통째로 붙여넣고 저장
 3. 스프레드시트를 새로고침하면 메뉴에 **QuestionMall** 생성
-4. **QuestionMall → 시트 초기화** 실행 — `cards` 시트와 10개 컬럼 헤더가 만들어짐
-5. (선택) **QuestionMall → 샘플 데이터 추가**
+4. **QuestionMall → 시트 초기화** 실행 — `cards` 시트와 19개 컬럼 헤더가 만들어짐
+5. ⚠️ **프로젝트 설정 → 스크립트 속성** 에 `ADMIN_PASSWORD` 추가 (코드에 비밀번호를 하드코딩하지 않습니다)
+6. (선택) **QuestionMall → 샘플 데이터 추가** · **번역 컬럼 채우기**
 
 ### 2) 웹 앱 배포
 Apps Script 편집기에서 **배포 → 새 배포 → 웹 앱**
@@ -108,32 +115,60 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 
 ---
 
+## 🌐 자동 번역 (GOOGLETRANSLATE)
+
+새 카드를 저장하면 Apps Script가 `question` / `categoryLabel` / `typeLabel` 세 컬럼에 대해 다음 수식을 자동으로 채웁니다.
+
+```text
+=IFERROR(GOOGLETRANSLATE(원본셀, "원본lang", "대상lang"), 원본셀)
+```
+
+- 원본 언어 셀은 원본을 그대로 참조 (`={원본셀}`)
+- 다른 두 언어 셀은 `GOOGLETRANSLATE`로 채워짐
+- 시트가 캐시·갱신을 처리하므로 프론트는 단순히 `question_ko / question_en / question_ja` 중 현재 언어 컬럼을 읽음
+
+기존 데이터를 한 번에 채우려면 메뉴 **QuestionMall → 번역 컬럼 채우기** 실행.
+
+> 💡 프론트엔드의 `pickLangField(card, base)` 가 현재 언어 컬럼 → 원본 순으로 폴백합니다.
+
+---
+
 ## 💾 자동 저장 (localStorage)
 
-키: `questionmall.maker.v1`
+| 키 | 저장 대상 |
+|---|---|
+| `questionmall.maker.v1` | 카테고리 · 카테고리 기타 텍스트 · 기타 색상 · 질문 유형 · 유형 기타 텍스트 · 질문 내용 · 만든 사람 · 선택한 이모지 |
+| `questionmall.recentEmojis.v1` | 최근 사용 이모지 (최대 16개) |
 
-**저장 대상**: 카테고리 · 카테고리 기타 텍스트 · 기타 색상 · 질문 유형 · 유형 기타 텍스트 · 질문 내용 · 만든 사람 · 선택한 이모지.
-
-**초기화 버튼** → 모달 확인 → 입력값 비우기 + `localStorage` 키 제거.
+**초기화 버튼** → 모달 확인 → 입력값 비우기 + `questionmall.maker.v1` 제거. (최근 이모지는 유지)
 
 ---
 
 ## 📑 시트 컬럼 스펙 (`cards` 시트)
 
-| 열 | 키 | 설명 | 예시 |
-|---|---|---|---|
-| A | `id` | UUID 8자리 (자동) | `1a2b3c4d` |
-| B | `timestamp` | ISO8601 | `2026-05-27T10:22:33.000Z` |
-| C | `lang` | 작성 언어 | `ko` / `en` / `ja` |
-| D | `category` | 카테고리 코드 | `mind` `thought` `body` `relation` `etc` |
-| E | `categoryLabel` | 표시용 라벨 | `마음` 또는 `미술` |
-| F | `type` | 질문 유형 코드 | `choice` `imagine` `exp` `dilemma` `etc` |
-| G | `typeLabel` | 표시용 라벨 | `선택질문` |
-| H | `question` | 질문 본문 (최대 500자) | `오늘 가장 행복했던 순간은?` |
-| I | `color` | 배경 HEX | `#FFD6E0` |
-| J | `author` | 만든 사람 (최대 30자) | `치수쌤` |
+번역 컬럼 포함 총 19개 열.
 
-> 💡 `type=choice`는 내부 코드이고, 화면 표시는 `선택질문`(ko) / `Choice`(en) / `選択`(ja)로 매핑돼요.
+| 열 | 키 | 설명 |
+|---|---|---|
+| A | `id` | UUID 8자리 (자동) |
+| B | `timestamp` | ISO8601 |
+| C | `lang` | 작성 언어 (`ko` / `en` / `ja`) |
+| D | `category` | 카테고리 코드 (`mind` `thought` `body` `relation` `etc`) |
+| E | `categoryLabel` | 원문 라벨 |
+| F | `categoryLabel_ko` | (수식) 한국어 |
+| G | `categoryLabel_en` | (수식) 영어 |
+| H | `categoryLabel_ja` | (수식) 일본어 |
+| I | `type` | 질문 유형 코드 |
+| J | `typeLabel` | 원문 라벨 |
+| K | `typeLabel_ko` | (수식) 한국어 |
+| L | `typeLabel_en` | (수식) 영어 |
+| M | `typeLabel_ja` | (수식) 일본어 |
+| N | `question` | 질문 본문 (최대 500자) |
+| O | `question_ko` | (수식) 한국어 |
+| P | `question_en` | (수식) 영어 |
+| Q | `question_ja` | (수식) 일본어 |
+| R | `color` | 배경 HEX |
+| S | `author` | 만든 사람 (최대 30자) |
 
 ---
 
@@ -155,10 +190,19 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 }
 ```
 
+### POST — 관리자 작업 (비밀번호 필요)
+| action | 동작 |
+|---|---|
+| `verify` | 비밀번호 검증 |
+| `admin-list` | 전체 조회 (모든 컬럼) |
+| `admin-create` | 카드 추가 |
+| `update` | id 기준 수정 (편집 가능 필드만 + 번역 수식 재설정) |
+| `delete` | id 기준 삭제 |
+
 ### GET — 공개 조회
 | 쿼리 | 설명 |
 |---|---|
-| `?action=list` | 전체 (배열) |
+| `?action=list` | 전체 (배열, 모든 번역 컬럼 포함) |
 | `?action=list&category=mind,thought` | 카테고리 필터 (쉼표 다중) |
 | `?action=list&type=choice&limit=50` | 유형 필터 + 최신 N개 |
 | `?action=count` | 총 개수 `{ "count": 42 }` — **첫 페이지 카운터가 사용** |
@@ -177,7 +221,9 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 --card-h: 360px;    /* 88mm * 4 */
 ```
 
-배지는 반투명 흰색 + `backdrop-filter: blur(4px)` + 흰색 테두리로 부드러운 글래스모피즘을 적용. 카드 본문 양 끝의 세리프 큰따옴표 “ ”가 책의 문장 같은 느낌을 줍니다.
+- 배지는 반투명 흰색 + `backdrop-filter: blur(4px)` + 흰색 테두리로 부드러운 글래스모피즘
+- 카드 본문 양 끝의 세리프 큰따옴표 “ ”가 책의 문장 같은 느낌
+- 카드 앞면 그라데이션은 `rgba(255,255,255,.18)` 일정 톤으로 — 내보내기 캡처가 어둡게 찍히지 않도록 의도적으로 평탄화
 
 ---
 
@@ -188,6 +234,8 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 | 공유는 되는데 시트에 안 쌓여요 | Apps Script 배포 권한이 "모든 사용자"인지, `SHEETS_WEBAPP_URL`이 정확히 들어갔는지 확인 |
 | 탐험대/로또에 데모 데이터만 나와요 | `SHEETS_WEBAPP_URL`이 비어있거나 GET 호출 실패. 브라우저 콘솔 확인 |
 | 첫 화면 카운터가 `—` 으로 표시 | GET `?action=count`가 막힘 — 배포 권한 재확인 |
+| 언어를 바꿔도 카드가 번역되지 않음 | 시트의 `question_*` 컬럼이 비어있을 수 있음. **QuestionMall → 번역 컬럼 채우기** 실행 |
+| 일본어 카드 텍스트가 잘려 보임 | `.l-q / .d-q / .card-question`에 `width:100%`와 `overflow-wrap:anywhere` 적용 — 캐시 비우고 새로고침 |
 | 클립보드 복사가 안 돼요 | `file://` 사용 시 차단. `python3 -m http.server`로 띄울 것 |
 | 이모지가 캡처에 안 찍혀요 | `html2canvas`는 OS 이모지 폰트 의존 — 시스템 이모지 폰트가 있는 환경에서 캡처 |
 | 만든 사람 칸에 URL 등 이상한 값 자동완성 | 브라우저 자동완성/저장된 항목 정리 (HTML 측 `autocomplete="off"`+고유 `name`은 이미 적용됨) |
@@ -195,15 +243,25 @@ const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 ---
 
 ## 🧭 변경 이력 (요약)
+
+### 2026-05
+- **자동 번역**: 시트 `GOOGLETRANSLATE` 컬럼 추가 → 언어 전환 시 카드 본문/라벨까지 자동 번역
+- **공유 전 확인 모달**: 어린이용 가이드 (수정/삭제 불가 안내, 맞춤법, 친구 배려) — 확인 후에만 실제 저장
+- **이모지 픽커 4배 확장**: 736개 / 8개 팩 / 스크롤 그리드 / 최근 사용 16개 행 / 직접 입력
+- **카드 내보내기 색감 개선**: 다크 그라데이션 제거, 파스텔 톤 그대로 출력
+- **사용법 모달 리뉴얼**: 탭별 섹션(제작소·탐험대·로또) + 자동 저장/번역 팁
+- **타이틀 가독성**: h2·탭 버튼을 Black Han Sans → Noto Sans 일반 굵기로 변경
+- **버그 픽스**: 질문 탐험대 카드가 반쪽 높이로 렌더되던 문제(`.face` position 충돌), 일본어 줄바꿈(`overflow-wrap: anywhere` + `width: 100%`), 따옴표 가독성 색상 복원
+
+### 이전
 - 카드 디자인 리뉴얼 — 세리프 큰따옴표 + 글래스모피즘 배지
-- 앞면 좌측 하단을 **사용자 선택 이모지 한 칸**으로 통일 (드래그 시스템 제거)
-- 뒷면 문구 변경 — `질문카드 / 질문은 나의 세계`
+- 앞면 좌측 하단을 사용자 선택 이모지 한 칸으로 통일 (드래그 시스템 제거)
+- 뒷면 문구 — `질문카드 / 질문은 나의 세계`
 - 탭 명칭: `질문 제작소 · 질문 탐험대 · 질문 로또`
 - **질문 로또** 탭 신규
 - 입력값 **자동 저장** + **초기화** 버튼
 - 첫 화면 **전체 카드 카운터**
-- 질문 유형 `공감질문 → 선택질문` (내부 코드도 `empathy → choice`로 변경)
-- 헤더 타이틀 가운데 정렬, 사용법 5단계 + 자동저장 안내
+- 질문 유형 `공감질문 → 선택질문` (내부 코드도 `empathy → choice`)
 
 ---
 
