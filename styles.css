@@ -127,7 +127,7 @@ html[lang="ja"] body { font-family: 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans',
 }
 .tab {
   border: 2px solid transparent; background: rgba(255,255,255,.6); padding: 12px 22px;
-  font: inherit; font-size: 16px; font-weight: 800; color: var(--muted); cursor: pointer;
+  font: inherit; font-size: 16px; font-weight: 500; color: var(--muted); cursor: pointer;
   border-radius: 22px 22px 0 0;
   display: inline-flex; align-items: center; gap: 8px;
   transition: transform .15s var(--bounce), background .15s ease, color .15s ease;
@@ -156,17 +156,17 @@ html[lang="ja"] body { font-family: 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans',
 h2 {
   margin-top: 0; text-align: center;
   font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans', sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 26px; letter-spacing: 0.5px;
 }
 
 .form-row { margin-bottom: 22px; max-width: 720px; margin-left: auto; margin-right: auto; }
 .form-row label { display: block; font-weight: 800; margin-bottom: 10px; text-align: center; font-size: var(--fs-label); }
 
-.chip-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .chip {
   border: 2px solid var(--line); background: #fff; border-radius: 22px;
-  padding: 10px 16px; cursor: pointer; font: inherit; font-size: var(--fs-chip); font-weight: 700;
+  padding: 8px 14px; cursor: pointer; font: inherit; font-size: var(--fs-chip); font-weight: 700;
   display: inline-flex; align-items: center; gap: 6px;
   transition: transform .14s var(--bounce), box-shadow .15s ease, background .15s ease, border-color .15s ease;
   min-height: 40px;
