@@ -271,17 +271,43 @@
 
   <!-- 사용법 모달 -->
   <div class="modal" id="helpModal" hidden>
-    <div class="modal-inner">
+    <div class="modal-inner help-modal-inner">
       <button class="modal-close" id="helpClose" aria-label="close">✕</button>
       <h3 data-i18n="helpTitle">이렇게 사용해요!</h3>
-      <ol class="help-list">
-        <li data-i18n="helpStep1">카테고리와 질문 유형을 골라요.</li>
-        <li data-i18n="helpStep2">질문 내용과 만든 사람을 적고 ‘생성하기’를 눌러요.</li>
-        <li data-i18n="helpStep3">앞면 좌측 하단에 들어갈 이모지를 골라 카드를 꾸며요.</li>
-        <li data-i18n="helpStep4">‘공유하기’로 모두의 카드에 더하고, ‘내보내기’로 친구에게 보내요.</li>
-        <li data-i18n="helpStep5">‘질문 탐험대’에서 여러 장을 뽑고, ‘질문 로또’에서 한 장씩 꺼내봐요.</li>
-      </ol>
-      <p class="muted small" data-i18n="helpTip">💡 입력한 내용은 자동 저장되니, 새로고침해도 그대로예요. ‘초기화’를 누르면 깨끗이 지워져요.</p>
+
+      <section class="help-section help-maker">
+        <h4 class="help-section-title">
+          <span class="help-icon" aria-hidden="true">🛠</span>
+          <span data-i18n="helpMakerTitle">질문 제작소</span>
+        </h4>
+        <ol class="help-list">
+          <li data-i18n="helpMakerStep1">카테고리와 질문 유형을 골라요.</li>
+          <li data-i18n="helpMakerStep2">질문 내용과 만든 사람을 적고 ‘생성하기’를 눌러요.</li>
+          <li data-i18n="helpMakerStep3">이모지로 카드를 예쁘게 꾸며요.</li>
+          <li data-i18n="helpMakerStep4">‘공유하기’로 모두의 카드에 더하고, ‘내보내기’로 친구에게 보내요.</li>
+        </ol>
+      </section>
+
+      <section class="help-section help-explorer">
+        <h4 class="help-section-title">
+          <span class="help-icon" aria-hidden="true">🧭</span>
+          <span data-i18n="helpExplorerTitle">질문 탐험대</span>
+        </h4>
+        <p class="help-desc" data-i18n="helpExplorerDesc">카테고리와 유형을 골라 한 번에 여러 장을 무작위로 뽑아요.</p>
+      </section>
+
+      <section class="help-section help-lotto">
+        <h4 class="help-section-title">
+          <span class="help-icon" aria-hidden="true">🎰</span>
+          <span data-i18n="helpLottoTitle">질문 로또</span>
+        </h4>
+        <p class="help-desc" data-i18n="helpLottoDesc">버튼 한 번에 무작위 한 장을 만나요. 카드를 클릭하면 뒤집혀요.</p>
+      </section>
+
+      <div class="help-tips">
+        <p data-i18n="helpTipSave">💾 입력 내용은 자동 저장돼요. ‘초기화’로 한 번에 비울 수 있어요.</p>
+        <p data-i18n="helpTipLang">🌐 한국어 · English · 日本語 — 언어를 바꾸면 카드 내용도 자동 번역돼요.</p>
+      </div>
     </div>
   </div>
 
