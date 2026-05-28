@@ -822,6 +822,7 @@ h2 {
 }
 .modal-close:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
 .help-modal-inner { max-width: 520px; }
+.help-modal-inner p { text-align: left; }
 .help-modal-inner h3 {
   text-align: center;
   margin-bottom: 18px;
