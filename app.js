@@ -7,6 +7,7 @@
 
   const LS_KEY = 'questionmall.maker.v1';
   const DECK_CACHE_KEY = 'questionmall.deck.v1';
+  const MISSION_CACHE_KEY = 'questionmall.missions.v1';
   const DECK_CACHE_TTL_MS = 10 * 60 * 1000; // 10분
 
   // ============ State ============
@@ -23,6 +24,8 @@
     emojiPack: 'face',
     deck: null,
     lottoCard: null,
+    missionDeck: null,
+    missionCard: null,
   };
 
   const CATEGORY_COLOR = {
@@ -857,6 +860,102 @@
     return wrap;
   }
 
+  // ============ Mission cards ============
+  const DEMO_MISSIONS = [
+    { mission:'질문카드 다시 뽑기',                            emoji:'🔄', color:'#D6E5FF' },
+    { mission:'웃긴 예시를 들어 설명하기',                     emoji:'😆', color:'#FFF4C2' },
+    { mission:'내 오른쪽에 앉은 친구의 생각을 예상해서 답하기', emoji:'➡️', color:'#D6F5D6' },
+    { mission:'세 문장으로 대답하기',                          emoji:'3️⃣', color:'#E5D6FF' },
+    { mission:'왼쪽에 앉은 친구가 대신 대답하기',              emoji:'⬅️', color:'#FFD6E0' },
+    { mission:'꽝! 이번 질문은 넘어가기',                      emoji:'🎉', color:'#FFE0C2' },
+    { mission:'자리에서 일어나서 설명하기',                    emoji:'🧍', color:'#C2F0F0' },
+    { mission:'10초 안에 대답하기',                            emoji:'⏱️', color:'#FFD6E0' },
+    { mission:'몸으로 말해요 (몸짓으로만 표현하기)',           emoji:'🤸', color:'#D6F5D6' },
+  ];
+
+  function missionText(m) { return pickLangField(m, 'mission'); }
+
+  async function _fetchMissionsFromNetwork() {
+    const res = await fetch(SHEETS_WEBAPP_URL + '?action=missions');
+    const data = await res.json();
+    const deck = Array.isArray(data) ? data : (data.items || []);
+    state.missionDeck = deck;
+    try {
+      localStorage.setItem(MISSION_CACHE_KEY, JSON.stringify({ data: deck, ts: Date.now() }));
+    } catch { /* 무시 */ }
+    return deck;
+  }
+
+  async function fetchMissions() {
+    if (state.missionDeck) return state.missionDeck;
+    if (SHEETS_WEBAPP_URL) {
+      try {
+        const raw = localStorage.getItem(MISSION_CACHE_KEY);
+        if (raw) {
+          const { data, ts } = JSON.parse(raw);
+          if (Array.isArray(data) && data.length > 0) {
+            state.missionDeck = data;
+            if (Date.now() - ts >= DECK_CACHE_TTL_MS) _fetchMissionsFromNetwork().catch(() => {});
+            return state.missionDeck;
+          }
+        }
+      } catch { /* 무시 */ }
+    }
+    if (!SHEETS_WEBAPP_URL) {
+      state.missionDeck = DEMO_MISSIONS.slice();
+      return state.missionDeck;
+    }
+    try {
+      return await _fetchMissionsFromNetwork();
+    } catch (e) {
+      console.error('fetch missions fail, using demo', e);
+      state.missionDeck = DEMO_MISSIONS.slice();
+      return state.missionDeck;
+    }
+  }
+
+  function buildMissionCard(m) {
+    const wrap = document.createElement('div');
+    wrap.className = 'mission-card';
+    wrap._missionRef = m;
+    const color = m.color || '#E5D6FF';
+    const emoji = m.emoji || '🎯';
+    wrap.innerHTML = `
+      <div class="mc-face" style="--mc-color:${escapeAttr(color)}">
+        <div class="mc-ribbon"><span aria-hidden="true">🎯</span><span class="mc-badge">${escapeHtml(t('missionBadge'))}</span></div>
+        <div class="mc-emoji" aria-hidden="true">${escapeHtml(emoji)}</div>
+        <div class="mc-text">${escapeHtml(missionText(m))}</div>
+        <div class="mc-foot">${escapeHtml(t('missionFoot'))}</div>
+      </div>`;
+    return wrap;
+  }
+
+  async function drawMission() {
+    const stage = $('#missionStage');
+    stage.innerHTML = `<div class="mission-loading muted">${t('loading')}</div>`;
+    const deck = await fetchMissions();
+    if (!deck.length) {
+      stage.innerHTML = `<div class="mission-loading muted">${t('missionEmpty')}</div>`;
+      state.missionCard = null;
+      return;
+    }
+    let m, tries = 0;
+    do { m = deck[Math.floor(Math.random() * deck.length)]; tries++; }
+    while (deck.length > 1 && state.missionCard && m === state.missionCard && tries < 12);
+    state.missionCard = m;
+    stage.innerHTML = '';
+    stage.appendChild(buildMissionCard(m));
+  }
+
+  function openMissionModal() {
+    $('#missionModal').hidden = false;
+    drawMission();
+  }
+  $('#explorerMissionBtn').addEventListener('click', openMissionModal);
+  $('#lottoMissionBtn').addEventListener('click', openMissionModal);
+  $('#missionRedrawBtn').addEventListener('click', drawMission);
+  $('#missionClose').addEventListener('click', () => { $('#missionModal').hidden = true; });
+
   // 언어가 바뀌면 현재 표시 중인 탐험대/로또 카드를 재렌더링한다
   function rerenderTranslatedDecks() {
     const drawGrid = document.getElementById('drawGrid');
@@ -890,12 +989,26 @@
       if (bTitle) bTitle.textContent = t('backTitle');
       if (bTagline) bTagline.textContent = t('backTagline');
     }
+    // 미션 카드 (모달이 열려 있으면)
+    const missionStage = document.getElementById('missionStage');
+    const mWrap = missionStage && missionStage.querySelector('.mission-card');
+    const m = mWrap && mWrap._missionRef;
+    if (mWrap && m) {
+      const txtEl = mWrap.querySelector('.mc-text');
+      const badgeEl = mWrap.querySelector('.mc-badge');
+      const footEl = mWrap.querySelector('.mc-foot');
+      if (txtEl) txtEl.textContent = missionText(m);
+      if (badgeEl) badgeEl.textContent = t('missionBadge');
+      if (footEl) footEl.textContent = t('missionFoot');
+    }
   }
 
   // ============ Admin Mode ============
   let adminPw = null;
   let adminItems = [];
   let adminView = 'list';
+  let adminMissions = [];
+  let adminSection = 'cards';
 
   const CAT_OPTIONS  = ['mind','thought','body','relation','etc'];
   const TYPE_OPTIONS = ['choice','imagine','exp','dilemma','etc'];
@@ -930,7 +1043,11 @@
   });
 
   $('#adminLogoutBtn').addEventListener('click', () => {
-    adminPw = null; adminItems = [];
+    adminPw = null; adminItems = []; adminMissions = [];
+    adminSection = 'cards';
+    $$('.admin-section-toggle .st').forEach(b => b.classList.toggle('active', b.dataset.section === 'cards'));
+    $('#adminToolsCards').hidden = false;
+    $('#adminToolsMissions').hidden = true;
     $('#adminPanel').hidden = true;
   });
 
@@ -1053,6 +1170,7 @@
       adminItems = r.items || [];
       state.deck = null;
       renderAdmin();
+      loadAdminMissions();
     } catch (e) {
       console.error('[admin-list error]', e);
       const isUrlError = e.message.includes('not configured');
@@ -1101,6 +1219,7 @@
   }
 
   function renderAdmin() {
+    if (adminSection === 'missions') { renderMissionsAdmin(); return; }
     const items = filteredAdminItems();
     const total = adminItems.length;
     const shown = items.length;
@@ -1259,6 +1378,178 @@
     const pad = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
+
+  // ============ Admin: mission cards ============
+  $$('.admin-section-toggle .st').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.admin-section-toggle .st').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      adminSection = btn.dataset.section;
+      $('#adminToolsCards').hidden = adminSection !== 'cards';
+      $('#adminToolsMissions').hidden = adminSection !== 'missions';
+      renderAdmin();
+    });
+  });
+
+  async function loadAdminMissions() {
+    try {
+      const r = await postToScript({ action: 'admin-mission-list', password: adminPw });
+      if (!r.ok) return;
+      adminMissions = r.items || [];
+      state.missionDeck = null;
+      if (adminSection === 'missions') renderAdmin();
+    } catch (e) {
+      console.error('[admin-mission-list error]', e);
+    }
+  }
+
+  function filteredMissions() {
+    const q = $('#adminMissionSearch').value.trim().toLowerCase();
+    let list = adminMissions.slice();
+    if (q) list = list.filter(m => String(m.mission || '').toLowerCase().includes(q));
+    const ts = it => { const d = new Date(it.timestamp); return isNaN(d) ? 0 : d.getTime(); };
+    return list.sort((a, b) => ts(b) - ts(a));
+  }
+
+  function renderMissionsAdmin() {
+    const items = filteredMissions();
+    const total = adminMissions.length;
+    const statsEl = $('#adminStats');
+    statsEl.textContent = (total === items.length)
+      ? t('totalCount').replace('{n}', total)
+      : `${items.length} / ${total}`;
+    const content = $('#adminContent');
+    if (items.length === 0) {
+      content.innerHTML = `<div class="admin-empty"><div class="admin-empty-emoji">🎯</div><p class="muted">${t('emptyMission')}</p></div>`;
+      return;
+    }
+    const grid = document.createElement('div');
+    grid.className = 'admin-cards admin-missions';
+    items.forEach(m => grid.appendChild(buildAdminMissionEl(m)));
+    content.innerHTML = '';
+    content.appendChild(grid);
+  }
+
+  function buildAdminMissionEl(m) {
+    const card = document.createElement('div');
+    card.className = 'admin-card admin-mission-card';
+    const color = m.color || '#E5D6FF';
+    card.innerHTML = `
+      <div class="ac-top">
+        <span class="ac-cat" style="background:${escapeAttr(color)}">${escapeHtml(m.emoji || '🎯')} ${escapeHtml(t('missionBadge'))}</span>
+        <span class="ac-meta">${escapeHtml(formatTs(m.timestamp))}</span>
+      </div>
+      <textarea data-k="mission">${escapeHtml(m.mission || '')}</textarea>
+      <div class="ac-row">
+        <input type="text" data-k="emoji" value="${escapeAttr(m.emoji || '')}" placeholder="🎯" style="width:72px" />
+        ${selectHtml('lang', m.lang, ['ko','en','ja'])}
+        <input type="text" data-k="color" value="${escapeAttr(m.color || '')}" style="width:90px" />
+        <span class="color-dot" style="background:${escapeAttr(color)}"></span>
+      </div>
+      <div class="ac-actions">
+        <button class="danger-btn" data-act="del">${t('deleteBtn')}</button>
+        <button class="primary-btn small-btn" data-act="save">${t('save')}</button>
+      </div>`;
+    bindMissionEvents(card, m);
+    return card;
+  }
+
+  function bindMissionEvents(scope, original) {
+    scope.querySelectorAll('[data-k]').forEach(input => {
+      input.addEventListener('input',  () => scope.classList.add('dirty'));
+      input.addEventListener('change', () => scope.classList.add('dirty'));
+    });
+    scope.querySelector('[data-act="save"]').addEventListener('click', () => saveMission(scope, original));
+    scope.querySelector('[data-act="del"]').addEventListener('click',  () => openMissionDeleteModal(original));
+  }
+
+  async function saveMission(scope, original) {
+    const fields = collectFields(scope);
+    try {
+      const r = await postToScript({ action: 'mission-update', password: adminPw, id: original.id, ...fields });
+      if (!r.ok) throw new Error(r.error || 'fail');
+      Object.assign(original, fields);
+      scope.classList.remove('dirty');
+      const dot = scope.querySelector('.color-dot');
+      if (dot) dot.style.background = fields.color || '#fff';
+      state.missionDeck = null;
+      showToast(t('saved'));
+    } catch (e) {
+      console.error(e); showToast(t('saveFail'));
+    }
+  }
+
+  // Mission delete confirmation
+  let _pendingMissionDeleteId = null;
+  function openMissionDeleteModal(m) {
+    _pendingMissionDeleteId = m.id;
+    const preview = $('#adminMissionDeletePreview');
+    const color = m.color || '#E5D6FF';
+    preview.innerHTML = `
+      <div class="del-card" style="background:${escapeAttr(color)}">
+        <div class="del-q">${escapeHtml(m.emoji || '🎯')} ${escapeHtml(m.mission || '')}</div>
+      </div>`;
+    $('#adminMissionDeleteModal').hidden = false;
+  }
+  function closeMissionDeleteModal() {
+    _pendingMissionDeleteId = null;
+    $('#adminMissionDeleteModal').hidden = true;
+  }
+  $('#adminMissionDeleteClose').addEventListener('click', closeMissionDeleteModal);
+  $('#adminMissionDeleteCancel').addEventListener('click', closeMissionDeleteModal);
+  $('#adminMissionDeleteOk').addEventListener('click', async () => {
+    if (!_pendingMissionDeleteId) return;
+    const id = _pendingMissionDeleteId;
+    closeMissionDeleteModal();
+    try {
+      const r = await postToScript({ action: 'mission-delete', password: adminPw, id });
+      if (!r.ok) throw new Error(r.error || 'fail');
+      adminMissions = adminMissions.filter(x => x.id !== id);
+      state.missionDeck = null;
+      renderMissionsAdmin();
+      showToast(t('deleted'));
+    } catch (e) {
+      console.error(e); showToast(t('saveFail'));
+    }
+  });
+
+  // Mission add
+  $('#adminMissionAddBtn').addEventListener('click', () => {
+    $('#amMission').value = '';
+    $('#amEmoji').value = '';
+    $('#amLang').value = state.lang;
+    $('#amColor').value = '#E5D6FF';
+    $('#adminMissionAddMsg').textContent = '';
+    $('#adminMissionAddModal').hidden = false;
+    setTimeout(() => $('#amMission').focus(), 50);
+  });
+  $('#adminMissionAddClose').addEventListener('click',  () => { $('#adminMissionAddModal').hidden = true; });
+  $('#adminMissionAddCancel').addEventListener('click', () => { $('#adminMissionAddModal').hidden = true; });
+  $('#adminMissionAddSave').addEventListener('click', async () => {
+    const mission = $('#amMission').value.trim();
+    if (!mission) { $('#adminMissionAddMsg').textContent = t('toastNeedQ'); return; }
+    const payload = {
+      action: 'admin-mission-create',
+      password: adminPw,
+      timestamp: new Date().toISOString(),
+      lang: $('#amLang').value,
+      mission,
+      emoji: $('#amEmoji').value.trim(),
+      color: $('#amColor').value.trim() || '#E5D6FF',
+    };
+    try {
+      const r = await postToScript(payload);
+      if (!r.ok) throw new Error(r.error || 'fail');
+      $('#adminMissionAddModal').hidden = true;
+      showToast(t('saved'));
+      state.missionDeck = null;
+      await loadAdminMissions();
+    } catch (e) {
+      console.error(e);
+      $('#adminMissionAddMsg').textContent = t('saveFail');
+    }
+  });
+  $('#adminMissionSearch').addEventListener('input', () => { if (adminSection === 'missions') renderAdmin(); });
 
   // ============ Init ============
   applyLang('ko');
