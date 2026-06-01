@@ -63,16 +63,20 @@ const MISSION_TRANSLATABLE = ['mission'];
 /** ────────────── Menu + 자동 초기화 ────────────── */
 
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('QuestionMall')
-    .addItem('시트 초기화 (헤더 재설정)', 'initSheet')
-    .addItem('샘플 데이터 추가', 'seedSamples')
-    .addItem('관리자 비밀번호 설정', 'promptSetAdminPassword')
-    .addItem('번역 컬럼 채우기 (기존 행 일괄)', 'backfillTranslations')
-    .addSeparator()
-    .addItem('미션 시트 초기화 (헤더 재설정)', 'initMissionSheet')
-    .addItem('미션 샘플 추가', 'seedMissionSamples')
-    .addToUi();
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu('QuestionMall')
+      .addItem('시트 초기화 (헤더 재설정)', 'initSheet')
+      .addItem('샘플 데이터 추가', 'seedSamples')
+      .addItem('관리자 비밀번호 설정', 'promptSetAdminPassword')
+      .addItem('번역 컬럼 채우기 (기존 행 일괄)', 'backfillTranslations')
+      .addSeparator()
+      .addItem('미션 시트 초기화 (헤더 재설정)', 'initMissionSheet')
+      .addItem('미션 샘플 추가', 'seedMissionSamples')
+      .addToUi();
+  } catch (e) {
+    // 에디터에서 직접 실행 시 getUi()를 쓸 수 없음 — 무시하고 초기화만 진행
+  }
   autoInit();
 }
 
