@@ -242,6 +242,10 @@
         <input type="number" id="drawCount" min="1" max="30" value="6" />
         <button class="primary-btn" id="drawBtn" data-i18n="draw">뽑기!</button>
         <button class="ghost-btn" id="flipAllBtn" hidden data-i18n="flipAll">모두 뒤집기</button>
+        <button class="mission-btn" id="explorerMissionBtn" type="button">
+          <span class="mission-btn-emoji" aria-hidden="true">🎯</span>
+          <span data-i18n="missionDraw">미션카드 뽑기</span>
+        </button>
       </div>
 
       <div class="draw-grid" id="drawGrid"></div>
@@ -257,6 +261,10 @@
 
       <div class="action-row">
         <button class="primary-btn" id="lottoDrawBtn" data-i18n="lottoDraw">뽑기!</button>
+        <button class="mission-btn" id="lottoMissionBtn" type="button">
+          <span class="mission-btn-emoji" aria-hidden="true">🎯</span>
+          <span data-i18n="missionDraw">미션카드 뽑기</span>
+        </button>
       </div>
     </section>
   </main>
@@ -302,9 +310,30 @@
         <p class="help-desc" data-i18n="helpLottoDesc">버튼 한 번에 무작위 한 장을 만나요. 카드를 클릭하면 뒤집혀요.</p>
       </section>
 
+      <section class="help-section help-mission">
+        <h4 class="help-section-title">
+          <span class="help-icon" aria-hidden="true">🎯</span>
+          <span data-i18n="helpMissionTitle">미션 카드</span>
+        </h4>
+        <p class="help-desc" data-i18n="helpMissionDesc">탐험대·로또에서 ‘미션카드 뽑기’를 누르면, 질문에 어떻게 답할지 재미있는 미션이 무작위로 나와요.</p>
+      </section>
+
       <div class="help-tips">
         <p data-i18n="helpTipSave">💾 입력 내용은 자동 저장돼요. ‘초기화’로 한 번에 비울 수 있어요.</p>
         <p data-i18n="helpTipLang">🌐 한국어 · English · 日本語 — 언어를 바꾸면 카드 내용도 자동 번역돼요.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 미션 카드 뽑기 모달 -->
+  <div class="modal" id="missionModal" hidden>
+    <div class="modal-inner mission-modal-inner">
+      <button class="modal-close" id="missionClose" aria-label="close">✕</button>
+      <h3 data-i18n="missionTitle">미션 카드</h3>
+      <p class="muted small mission-desc" data-i18n="missionDesc">질문에 어떻게 답할지 미션을 더해보세요!</p>
+      <div class="mission-stage" id="missionStage"></div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="primary-btn" id="missionRedrawBtn" data-i18n="missionRedraw">다시 뽑기</button>
       </div>
     </div>
   </div>
@@ -395,7 +424,11 @@
           <button class="ghost-btn" id="adminLogoutBtn" data-i18n="logout">로그아웃</button>
         </div>
       </div>
-      <div class="admin-tools">
+      <div class="admin-section-toggle" role="tablist" aria-label="section">
+        <button class="st active" data-section="cards" data-i18n="adminSecCards">질문 카드</button>
+        <button class="st" data-section="missions" data-i18n="adminSecMissions">미션 카드</button>
+      </div>
+      <div class="admin-tools" id="adminToolsCards">
         <div class="view-toggle" role="tablist" aria-label="view mode">
           <button class="vt active" data-view="list" data-i18n="viewList">리스트</button>
           <button class="vt" data-view="card" data-i18n="viewCard">카드</button>
@@ -426,6 +459,13 @@
           <option value="category" data-i18n="sortCategory">카테고리순</option>
         </select>
         <button class="primary-btn small-btn" id="adminAddBtn" data-i18n="adminAdd">+ 새 카드</button>
+      </div>
+      <div class="admin-tools" id="adminToolsMissions" hidden>
+        <div class="admin-search-wrap">
+          <span class="admin-search-icon" aria-hidden="true">🔍</span>
+          <input type="search" id="adminMissionSearch" data-i18n-placeholder="searchMissionPh" placeholder="미션 검색" />
+        </div>
+        <button class="primary-btn small-btn" id="adminMissionAddBtn" data-i18n="adminMissionAdd">+ 새 미션</button>
       </div>
     </header>
     <div class="admin-stats" id="adminStats"></div>
@@ -493,6 +533,50 @@
         <button class="primary-btn" id="adminAddSave"   data-i18n="save">저장</button>
       </div>
       <p class="muted small" id="adminAddMsg" style="text-align:center;margin-top:10px"></p>
+    </div>
+  </div>
+
+  <!-- 관리자 — 새 미션 추가 모달 -->
+  <div class="modal" id="adminMissionAddModal" hidden>
+    <div class="modal-inner" style="width:480px">
+      <button class="modal-close" id="adminMissionAddClose" aria-label="close">✕</button>
+      <h3 data-i18n="adminMissionAddTitle">새 미션 카드 추가</h3>
+      <div class="admin-add-form">
+        <label class="aa-label" data-i18n="missionContent">미션 내용</label>
+        <textarea id="amMission" rows="3" maxlength="300" data-i18n-placeholder="missionPh" placeholder="예) 세 문장으로 대답하기"></textarea>
+
+        <label class="aa-label" data-i18n="missionEmoji">이모지 (선택)</label>
+        <input type="text" id="amEmoji" maxlength="8" autocomplete="off" placeholder="🎯" />
+
+        <label class="aa-label" data-i18n="aaLang">언어</label>
+        <select id="amLang">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+
+        <label class="aa-label" data-i18n="aaColor">카드 색상</label>
+        <input type="text" id="amColor" placeholder="#E5D6FF" />
+      </div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="ghost-btn"   id="adminMissionAddCancel" data-i18n="cancel">취소</button>
+        <button class="primary-btn" id="adminMissionAddSave"   data-i18n="save">저장</button>
+      </div>
+      <p class="muted small" id="adminMissionAddMsg" style="text-align:center;margin-top:10px"></p>
+    </div>
+  </div>
+
+  <!-- 관리자 — 미션 삭제 확인 모달 -->
+  <div class="modal" id="adminMissionDeleteModal" hidden>
+    <div class="modal-inner">
+      <button class="modal-close" id="adminMissionDeleteClose" aria-label="close">✕</button>
+      <h3 data-i18n="confirmDeleteTitle">정말 삭제할까요?</h3>
+      <p class="muted small" data-i18n="confirmDeleteDesc">삭제한 카드는 되돌릴 수 없어요.</p>
+      <div class="admin-delete-preview" id="adminMissionDeletePreview"></div>
+      <div class="action-row" style="margin-top:14px">
+        <button class="ghost-btn" id="adminMissionDeleteCancel" data-i18n="cancel">취소</button>
+        <button class="danger-btn danger-btn-lg" id="adminMissionDeleteOk" data-i18n="deleteBtn">삭제</button>
+      </div>
     </div>
   </div>
 

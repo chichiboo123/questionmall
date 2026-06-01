@@ -1115,6 +1115,83 @@ h2 {
 .admin-add-form textarea:focus { outline: none; border-color: var(--sky); }
 .admin-add-form textarea { resize: vertical; min-height: 80px; }
 
+/* ========== Mission cards ========== */
+.mission-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, var(--grape) 0%, #9B6BFF 100%);
+  color: #fff; border: none;
+  border-radius: 26px; padding: 11px 20px; cursor: pointer;
+  font: inherit; font-weight: 800; font-size: 15px;
+  box-shadow: 0 4px 0 #7d52d6, 0 8px 18px rgba(155,107,255,.38);
+  transition: transform .14s var(--bounce), filter .15s ease, box-shadow .15s ease;
+}
+.mission-btn:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 6px 0 #7d52d6, 0 10px 22px rgba(155,107,255,.45); }
+.mission-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #7d52d6, 0 2px 6px rgba(155,107,255,.3); }
+.mission-btn-emoji { font-size: 18px; line-height: 1; }
+
+.mission-modal-inner { width: 380px; max-width: 92vw; }
+.mission-desc { margin: 0 0 4px; }
+.mission-stage {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 320px; padding: 12px 4px;
+}
+.mission-loading { text-align: center; font-size: 15px; padding: 80px 12px; }
+
+.mission-card {
+  width: 260px; max-width: 100%;
+  animation: lottoIn .5s cubic-bezier(.2,.9,.3,1.2);
+}
+.mc-face {
+  position: relative; overflow: hidden;
+  border-radius: 22px; box-shadow: var(--card-shadow);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.55) 0%, transparent 55%),
+    var(--mc-color, var(--purple));
+  border: 2px solid rgba(255,255,255,.6);
+  padding: 22px 20px 20px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  min-height: 300px;
+}
+.mc-ribbon {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--grape); color: #fff;
+  padding: 6px 16px; border-radius: 999px;
+  font-family: 'Black Han Sans', sans-serif; font-size: 16px; letter-spacing: .5px;
+  box-shadow: 0 3px 10px rgba(124,82,214,.35);
+}
+.mc-emoji {
+  font-size: 56px; line-height: 1; margin: 18px 0 14px;
+  animation: wave 2.6s ease-in-out infinite;
+}
+.mc-text {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 20px; line-height: 1.5;
+  color: var(--ink); word-break: keep-all; overflow-wrap: anywhere;
+  width: 100%;
+}
+.mc-foot {
+  margin-top: 14px; font-size: 12px; font-weight: 700;
+  color: rgba(0,0,0,.5); letter-spacing: .3px;
+}
+
+/* Admin: section toggle + mission cards */
+.admin-section-toggle {
+  display: inline-flex; align-self: flex-start;
+  border: 2px solid var(--grape); border-radius: 22px; overflow: hidden;
+  background: #fff;
+}
+.admin-section-toggle .st {
+  background: #fff; border: none; padding: 8px 20px; cursor: pointer; font: inherit;
+  font-weight: 800; font-size: 14px; color: var(--grape);
+  transition: background .15s ease, color .15s ease;
+}
+.admin-section-toggle .st:hover { background: rgba(179,136,255,.1); }
+.admin-section-toggle .st.active { background: var(--grape); color: #fff; }
+.admin-mission-card .ac-cat { color: var(--ink); }
+
+.help-section.help-mission  { background: rgba(231,222,255,.4); border-color: rgba(155,107,255,.3); }
+
 /* ========== Toast ========== */
 .toast {
   position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%);
