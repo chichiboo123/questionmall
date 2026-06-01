@@ -153,6 +153,17 @@
   $('#helpBtn').addEventListener('click', () => { $('#helpModal').hidden = false; });
   $('#helpClose').addEventListener('click', () => { $('#helpModal').hidden = true; });
 
+  // ============ Modal UX: 배경 클릭 / ESC 로 닫기 ============
+  $$('.modal').forEach(modal => {
+    modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    $$('.modal').forEach(m => { if (!m.hidden) m.hidden = true; });
+    const mf = $('#missionModal');
+    if (mf && !mf.hidden) mf.hidden = true;
+  });
+
   // ============ Tabs ============
   $$('.tab').forEach(tab => {
     tab.addEventListener('click', async () => {
@@ -955,8 +966,77 @@
     stage.appendChild(buildMissionCard(m));
   }
 
+  // 드래그로 옮긴 미션카드 위치를 기억한다 (세션 동안 유지)
+  let missionPos = null;
+
+  function clampMissionPos(panel, left, top) {
+    const maxX = Math.max(0, window.innerWidth  - panel.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - panel.offsetHeight);
+    return {
+      left: Math.max(0, Math.min(left, maxX)),
+      top:  Math.max(0, Math.min(top,  maxY)),
+    };
+  }
+
+  function applyMissionPos(panel) {
+    if (!missionPos) return; // 옮긴 적 없으면 CSS 기본값(우측 하단) 사용
+    const p = clampMissionPos(panel, missionPos.left, missionPos.top);
+    missionPos = p;
+    panel.style.left   = p.left + 'px';
+    panel.style.top    = p.top + 'px';
+    panel.style.right  = 'auto';
+    panel.style.bottom = 'auto';
+  }
+
+  // 패널을 손잡이(handle)로 드래그할 수 있게 한다 (마우스·터치 공통)
+  function makeMissionDraggable(panel, handle) {
+    let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+    handle.addEventListener('pointerdown', e => {
+      if (e.target.closest('.mission-float-close')) return; // 닫기 버튼은 제외
+      const rect = panel.getBoundingClientRect();
+      origLeft = rect.left; origTop = rect.top;
+      startX = e.clientX; startY = e.clientY;
+      dragging = true;
+      panel.classList.add('dragging');
+      // right/bottom 기준에서 left/top 기준으로 전환
+      panel.style.left = rect.left + 'px';
+      panel.style.top  = rect.top + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const p = clampMissionPos(panel, origLeft + (e.clientX - startX), origTop + (e.clientY - startY));
+      missionPos = p;
+      panel.style.left = p.left + 'px';
+      panel.style.top  = p.top + 'px';
+    });
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      panel.classList.remove('dragging');
+    }
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+  }
+
+  makeMissionDraggable($('#missionModal'), $('#missionDragHandle'));
+
+  // 창 크기가 바뀌면 옮겨둔 미션카드가 화면 밖으로 나가지 않도록 보정
+  window.addEventListener('resize', () => {
+    const panel = $('#missionModal');
+    if (panel && !panel.hidden) applyMissionPos(panel);
+  });
+
   function openMissionModal() {
-    $('#missionModal').hidden = false;
+    const panel = $('#missionModal');
+    panel.hidden = false;
+    applyMissionPos(panel);
     drawMission();
   }
   $('#explorerMissionBtn').addEventListener('click', openMissionModal);

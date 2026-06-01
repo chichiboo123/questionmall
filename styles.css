@@ -794,6 +794,11 @@ h2 {
   background: #fff; border-radius: 24px;
   padding: 34px 30px 26px;
   max-width: 92vw; width: 420px;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   position: relative;
   box-shadow: 0 16px 48px rgba(0,0,0,.22);
   border: 2px solid #f3e9d2;
@@ -1159,6 +1164,15 @@ h2 {
 .mission-float-head {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   margin-bottom: 8px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.mission-float.dragging { animation: none; }
+.mission-float.dragging .mission-float-head { cursor: grabbing; }
+.mission-float-title { display: inline-flex; align-items: center; gap: 4px; }
+.mission-float-grip {
+  font-size: 13px; color: var(--muted); margin-right: 2px; line-height: 1;
 }
 .mission-float-title {
   font-family: 'Black Han Sans', sans-serif; font-size: 16px;
