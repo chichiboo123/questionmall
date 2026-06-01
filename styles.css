@@ -1141,50 +1141,83 @@ h2 {
   flex-wrap: wrap; margin: 2px 0 18px;
 }
 
-.mission-modal-inner { width: 380px; max-width: 92vw; }
-.mission-desc { margin: 0 0 4px; }
+/* 질문을 가리지 않도록 화면 한쪽 구석에 떠 있는 패널 (배경 어둡게 X) */
+.mission-float {
+  position: fixed; z-index: 150;
+  right: 20px; bottom: 20px;
+  width: 252px; max-width: calc(100vw - 24px);
+  background: #fff; border-radius: 22px;
+  border: 2px solid #e7ddff;
+  box-shadow: 0 16px 44px rgba(124,82,214,.28), 0 4px 12px rgba(0,0,0,.1);
+  padding: 14px 14px 14px;
+  animation: missionFloatIn .28s var(--bounce);
+}
+@keyframes missionFloatIn {
+  from { opacity: 0; transform: translateY(24px) scale(.9); }
+  to   { opacity: 1; transform: none; }
+}
+.mission-float-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 8px;
+}
+.mission-float-title {
+  font-family: 'Black Han Sans', sans-serif; font-size: 16px;
+  color: var(--grape); letter-spacing: .5px;
+}
+.mission-float-close {
+  width: 28px; height: 28px; flex: none;
+  background: var(--bg); border: 2px solid var(--line); font-size: 13px; cursor: pointer;
+  border-radius: 50%; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s ease, transform .14s var(--bounce);
+}
+.mission-float-close:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
 .mission-stage {
   display: flex; align-items: center; justify-content: center;
-  min-height: 320px; padding: 12px 4px;
+  min-height: 180px;
 }
-.mission-loading { text-align: center; font-size: 15px; padding: 80px 12px; }
+.mission-loading { text-align: center; font-size: 14px; padding: 60px 8px; }
+.mission-redraw-btn { width: 100%; margin-top: 12px; }
 
 .mission-card {
-  width: 260px; max-width: 100%;
+  width: 100%; max-width: 224px;
   animation: lottoIn .5s cubic-bezier(.2,.9,.3,1.2);
 }
 .mc-face {
   position: relative; overflow: hidden;
-  border-radius: 22px; box-shadow: var(--card-shadow);
+  border-radius: 18px; box-shadow: var(--card-shadow);
   background:
     radial-gradient(circle at 50% 0%, rgba(255,255,255,.55) 0%, transparent 55%),
     var(--mc-color, var(--purple));
   border: 2px solid rgba(255,255,255,.6);
-  padding: 22px 20px 20px;
+  padding: 16px 16px 14px;
   display: flex; flex-direction: column; align-items: center; text-align: center;
-  min-height: 300px;
 }
 .mc-ribbon {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 5px;
   background: var(--grape); color: #fff;
-  padding: 6px 16px; border-radius: 999px;
-  font-family: 'Black Han Sans', sans-serif; font-size: 16px; letter-spacing: .5px;
+  padding: 4px 13px; border-radius: 999px;
+  font-family: 'Black Han Sans', sans-serif; font-size: 13px; letter-spacing: .5px;
   box-shadow: 0 3px 10px rgba(124,82,214,.35);
 }
 .mc-emoji {
-  font-size: 56px; line-height: 1; margin: 18px 0 14px;
+  font-size: 44px; line-height: 1; margin: 10px 0 8px;
   animation: wave 2.6s ease-in-out infinite;
 }
 .mc-text {
-  flex: 1;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 20px; line-height: 1.5;
+  font-weight: 800; font-size: 17px; line-height: 1.45;
   color: var(--ink); word-break: keep-all; overflow-wrap: anywhere;
   width: 100%;
 }
 .mc-foot {
-  margin-top: 14px; font-size: 12px; font-weight: 700;
+  margin-top: 10px; font-size: 11px; font-weight: 700;
   color: rgba(0,0,0,.5); letter-spacing: .3px;
+}
+@media (max-width: 560px) {
+  .mission-float { right: 10px; bottom: 10px; width: 188px; padding: 12px; }
+  .mission-float-title { font-size: 14px; }
+  .mc-emoji { font-size: 36px; }
+  .mc-text { font-size: 15px; }
 }
 
 /* Admin: section toggle + mission cards */

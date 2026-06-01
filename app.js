@@ -876,6 +876,13 @@
 
   function missionText(m) { return pickLangField(m, 'mission'); }
 
+  // 미션을 추가/수정/삭제하면 메모리·localStorage 캐시를 함께 비워
+  // 다음 '미션카드 뽑기'가 최신 데이터(이모지·색상 등)를 가져오도록 한다
+  function clearMissionCache() {
+    state.missionDeck = null;
+    try { localStorage.removeItem(MISSION_CACHE_KEY); } catch { /* 무시 */ }
+  }
+
   async function _fetchMissionsFromNetwork() {
     const res = await fetch(SHEETS_WEBAPP_URL + '?action=missions');
     const data = await res.json();
@@ -1397,7 +1404,7 @@
       const r = await postToScript({ action: 'admin-mission-list', password: adminPw });
       if (!r.ok) return;
       adminMissions = r.items || [];
-      state.missionDeck = null;
+      clearMissionCache();
       if (adminSection === 'missions') renderAdmin();
     } catch (e) {
       console.error('[admin-mission-list error]', e);
@@ -1473,7 +1480,7 @@
       scope.classList.remove('dirty');
       const dot = scope.querySelector('.color-dot');
       if (dot) dot.style.background = fields.color || '#fff';
-      state.missionDeck = null;
+      clearMissionCache();
       showToast(t('saved'));
     } catch (e) {
       console.error(e); showToast(t('saveFail'));
@@ -1506,7 +1513,7 @@
       const r = await postToScript({ action: 'mission-delete', password: adminPw, id });
       if (!r.ok) throw new Error(r.error || 'fail');
       adminMissions = adminMissions.filter(x => x.id !== id);
-      state.missionDeck = null;
+      clearMissionCache();
       renderMissionsAdmin();
       showToast(t('deleted'));
     } catch (e) {
@@ -1543,7 +1550,7 @@
       if (!r.ok) throw new Error(r.error || 'fail');
       $('#adminMissionAddModal').hidden = true;
       showToast(t('saved'));
-      state.missionDeck = null;
+      clearMissionCache();
       await loadAdminMissions();
     } catch (e) {
       console.error(e);

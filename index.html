@@ -329,17 +329,14 @@
     </div>
   </div>
 
-  <!-- 미션 카드 뽑기 모달 -->
-  <div class="modal" id="missionModal" hidden>
-    <div class="modal-inner mission-modal-inner">
-      <button class="modal-close" id="missionClose" aria-label="close">✕</button>
-      <h3 data-i18n="missionTitle">미션 카드</h3>
-      <p class="muted small mission-desc" data-i18n="missionDesc">질문에 어떻게 답할지 미션을 더해보세요!</p>
-      <div class="mission-stage" id="missionStage"></div>
-      <div class="action-row" style="margin-top:16px">
-        <button class="primary-btn" id="missionRedrawBtn" data-i18n="missionRedraw">다시 뽑기</button>
-      </div>
+  <!-- 미션 카드 뽑기 — 질문을 가리지 않는 떠 있는 패널 -->
+  <div class="mission-float" id="missionModal" hidden>
+    <div class="mission-float-head">
+      <span class="mission-float-title"><span aria-hidden="true">🎯</span> <span data-i18n="missionTitle">미션 카드</span></span>
+      <button class="mission-float-close" id="missionClose" aria-label="close">✕</button>
     </div>
+    <div class="mission-stage" id="missionStage"></div>
+    <button class="primary-btn mission-redraw-btn" id="missionRedrawBtn" data-i18n="missionRedraw">다시 뽑기</button>
   </div>
 
   <!-- 내보내기 모달 -->
