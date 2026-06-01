@@ -704,7 +704,7 @@
     );
     if (pool.length === 0) {
       grid.innerHTML = `<div class="empty-state">${t('emptyFilter')}</div>`;
-      $('#flipAllBtn').hidden = true;
+      $('#drawResultBar').hidden = true;
       return;
     }
     const requested = Math.max(1, Math.min(30, parseInt($('#drawCount').value, 10) || 1));
@@ -717,7 +717,7 @@
     const picked = shuffle(pool).slice(0, n);
     grid.innerHTML = '';
     picked.forEach(card => grid.appendChild(buildDrawCard(card)));
-    $('#flipAllBtn').hidden = false;
+    $('#drawResultBar').hidden = false;
   });
 
   function categoryLabelFor(value) {
@@ -821,6 +821,7 @@
     stage.appendChild(buildLottoCard(card));
     btn.setAttribute('data-i18n', 'lottoRedraw');
     btn.textContent = t('lottoRedraw');
+    $('#lottoMissionBtn').hidden = false;
   });
 
   function buildLottoCard(card) {

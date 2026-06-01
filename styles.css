@@ -1128,6 +1128,18 @@ h2 {
 .mission-btn:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 6px 0 #7d52d6, 0 10px 22px rgba(155,107,255,.45); }
 .mission-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #7d52d6, 0 2px 6px rgba(155,107,255,.3); }
 .mission-btn-emoji { font-size: 18px; line-height: 1; }
+.mission-btn-sm {
+  padding: 9px 16px; font-size: 14px;
+  box-shadow: 0 3px 0 #7d52d6, 0 6px 14px rgba(155,107,255,.3);
+}
+.mission-btn-sm:hover { box-shadow: 0 5px 0 #7d52d6, 0 8px 18px rgba(155,107,255,.4); }
+.mission-btn-sm:active { box-shadow: 0 1px 0 #7d52d6, 0 2px 6px rgba(155,107,255,.3); }
+
+/* 탐험대: 뽑은 뒤에만 보이는 결과 도구 바 */
+.draw-result-bar {
+  display: flex; gap: 10px; justify-content: center; align-items: center;
+  flex-wrap: wrap; margin: 2px 0 18px;
+}
 
 .mission-modal-inner { width: 380px; max-width: 92vw; }
 .mission-desc { margin: 0 0 4px; }

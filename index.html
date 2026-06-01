@@ -241,8 +241,12 @@
         <label for="drawCount" data-i18n="howMany">몇 장 뽑을까요?</label>
         <input type="number" id="drawCount" min="1" max="30" value="6" />
         <button class="primary-btn" id="drawBtn" data-i18n="draw">뽑기!</button>
-        <button class="ghost-btn" id="flipAllBtn" hidden data-i18n="flipAll">모두 뒤집기</button>
-        <button class="mission-btn" id="explorerMissionBtn" type="button">
+      </div>
+
+      <!-- 카드를 뽑은 뒤에만 보이는 보조 도구 -->
+      <div class="draw-result-bar" id="drawResultBar" hidden>
+        <button class="ghost-btn" id="flipAllBtn" data-i18n="flipAll">모두 뒤집기</button>
+        <button class="mission-btn mission-btn-sm" id="explorerMissionBtn" type="button">
           <span class="mission-btn-emoji" aria-hidden="true">🎯</span>
           <span data-i18n="missionDraw">미션카드 뽑기</span>
         </button>
@@ -261,7 +265,7 @@
 
       <div class="action-row">
         <button class="primary-btn" id="lottoDrawBtn" data-i18n="lottoDraw">뽑기!</button>
-        <button class="mission-btn" id="lottoMissionBtn" type="button">
+        <button class="mission-btn mission-btn-sm" id="lottoMissionBtn" type="button" hidden>
           <span class="mission-btn-emoji" aria-hidden="true">🎯</span>
           <span data-i18n="missionDraw">미션카드 뽑기</span>
         </button>
